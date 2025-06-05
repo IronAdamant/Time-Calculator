@@ -1,0 +1,361 @@
+/* --- Themes (Variables & Dark Mode) --- */
+:root {
+    --bg-color: #eef1f5;
+    --text-color: #2c3e50;
+    --header-bg-color: #34495e;
+    --header-text-color: #ffffff;
+    --main-bg-color: #ffffff;
+    --main-shadow-color: rgba(0,0,0,0.15);
+    --input-label-color: #34495e;
+    --input-border-color: #bdc3c7;
+    --input-focus-border-color: #3498db;
+    --input-focus-shadow-color: rgba(52, 152, 219, 0.2);
+    --input-invalid-border-color: #e74c3c;
+    --input-invalid-bg-color: #fbeae5;
+    --input-valid-border-color: #2ecc71;
+    --input-valid-bg-color: #eafaf1;
+    --button-primary-bg-color: #3498db;
+    --button-primary-hover-bg-color: #2980b9;
+    --button-primary-text-color: #ffffff;
+    --button-secondary-bg-color: #e74c3c; /* For Clear button */
+    --button-secondary-hover-bg-color: #c0392b;
+    --button-secondary-text-color: #ffffff;
+    --button-disabled-bg-color: #bdc3c7;
+    --result-bg-color: #f8f9fa;
+    --result-border-color: #dee2e6;
+    --result-success-color: #1abc9c;
+    --result-success-border-color: #1abc9c;
+    --result-error-color: #e74c3c;
+    --result-error-border-color: #e74c3c;
+    --footer-bg-color: #2c3e50;
+    --footer-text-color: #ffffff;
+    --theme-toggle-bg: #7f8c8d;
+    --theme-toggle-hover-bg: #95a5a6;
+}
+
+body.dark-theme {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-bg-color: #1f2b38;
+    --header-text-color: #ecf0f1;
+    --main-bg-color: #34495e;
+    --main-shadow-color: rgba(0,0,0,0.3);
+    --input-label-color: #ecf0f1;
+    --input-border-color: #7f8c8d;
+    --input-focus-border-color: #5dade2;
+    --input-focus-shadow-color: rgba(93, 173, 226, 0.25);
+    --input-invalid-border-color: #e74c3c; /* Stays similar for visibility */
+    --input-invalid-bg-color: #583c3c;
+    --input-valid-border-color: #2ecc71; /* Stays similar */
+    --input-valid-bg-color: #3c5848;
+    --button-primary-bg-color: #5dade2;
+    --button-primary-hover-bg-color: #4a90c2;
+    --button-secondary-bg-color: #c0392b; /* Stays similar for Clear */
+    --button-secondary-hover-bg-color: #a93226;
+    --button-disabled-bg-color: #7f8c8d;
+    --result-bg-color: #2c3e50; /* Darker background for results in dark mode */
+    --result-border-color: #7f8c8d;
+    --result-success-color: #2ecc71;
+    --result-success-border-color: #2ecc71;
+    --result-error-color: #e74c3c; /* Stays similar */
+    --result-error-border-color: #e74c3c;
+    --footer-bg-color: #1f2b38;
+    --footer-text-color: #ecf0f1;
+    --theme-toggle-bg: #bdc3c7;
+    --theme-toggle-hover-bg: #ecf0f1;
+}
+
+/* --- General Styles --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* --- Header & Footer --- */
+header {
+    background: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 1rem 0;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative; /* For theme toggle button positioning */
+}
+
+header h1 {
+    margin: 0;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem 0 1.5rem 0; /* Ensure enough padding at bottom */
+    background: var(--footer-bg-color);
+    color: var(--footer-text-color);
+    width: 100%;
+    margin-top: auto;
+}
+
+.localstorage-warning {
+    font-size: 0.75rem; /* Smaller font size */
+    color: var(--text-color); /* Use theme variable, but could be muted further */
+    opacity: 0.8; /* Slightly muted */
+    margin-top: 0.5rem; /* Space from the copyright line if in footer */
+    text-align: center; /* Consistent with other footer text if that's centered */
+}
+
+/* --- Main Content & Forms --- */
+main {
+    width: 80%;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: var(--main-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--main-shadow-color);
+}
+
+#input-section div { /* Container for label, input, and error span */
+    margin-bottom: 1.75rem;
+}
+
+#input-section label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    color: var(--input-label-color);
+    font-size: 0.95rem;
+}
+
+#input-section input[type="text"] {
+    width: calc(100% - 16px); /* Full width minus some padding, assuming box-sizing: border-box */
+    padding: 0.5rem;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+}
+
+#input-section input[type="text"]:focus {
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
+}
+
+/* --- Validation & Feedback --- */
+#input-section input[type="text"].invalid {
+    border-color: var(--input-invalid-border-color);
+    background-color: var(--input-invalid-bg-color);
+}
+
+#input-section input[type="text"].valid {
+    border-color: var(--input-valid-border-color);
+    background-color: var(--input-valid-bg-color);
+}
+
+.field-error-message {
+    display: block;
+    color: var(--result-error-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1em; /* Reserve space even if empty to prevent layout shifts */
+}
+
+#output-section {
+    margin-top: 2rem;
+}
+
+#output-section h2 {
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+#result_area {
+    padding: 1rem;
+    background: var(--result-bg-color);
+    border: 1px solid var(--result-border-color);
+    border-radius: 4px;
+    min-height: 30px;
+    white-space: pre-wrap;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    transition: background-color 0.3s ease;
+    color: var(--text-color);
+}
+
+#result_area.success-message {
+    color: var(--result-success-color);
+    font-weight: bold;
+    border-left: 5px solid var(--result-success-border-color);
+}
+
+#result_area.error-message {
+    color: var(--result-error-color);
+    font-weight: bold;
+    border-left: 5px solid var(--result-error-border-color);
+}
+
+
+/* --- Button Styles --- */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.button-group button { /* Common styles for buttons in a group */
+    flex-grow: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+#calculate_button {
+    background: var(--button-primary-bg-color);
+    color: var(--button-primary-text-color);
+}
+
+#calculate_button:hover {
+    background: var(--button-primary-hover-bg-color);
+}
+
+#calculate_button:active {
+    transform: translateY(1px);
+}
+
+#calculate_button:disabled {
+    background-color: var(--button-disabled-bg-color);
+    cursor: not-allowed;
+}
+
+#clear_button {
+    background-color: var(--button-secondary-bg-color);
+    color: var(--button-secondary-text-color);
+}
+
+#clear_button:hover {
+    background-color: var(--button-secondary-hover-bg-color);
+}
+
+#clear_button:active {
+   transform: translateY(1px);
+}
+
+#theme_toggle_button {
+    background: var(--theme-toggle-bg);
+    color: var(--header-text-color);
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    transition: background-color 0.2s ease-in-out;
+}
+
+#theme_toggle_button:hover {
+    background: var(--theme-toggle-hover-bg);
+}
+
+/* --- Accessibility --- */
+button:focus-visible {
+    outline: 2px solid var(--input-focus-border-color, #3498db);
+    outline-offset: 2px;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 768px) {
+    main {
+        width: 95%;
+        margin: 1rem auto;
+    }
+    #theme_toggle_button {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.9rem;
+        right: 0.5rem;
+    }
+}
+
+/* --- Presets Section --- */
+#presets-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--input-border-color, #bdc3c7);
+}
+
+#presets-section h2 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.preset-controls div {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Spacing between label, input, button */
+}
+
+.preset-controls label {
+    /* display: block; */ /* Already styled in #input-section but good to be specific if needed */
+    margin-bottom: 0; /* Override if #input-section label style has margin */
+    font-weight: bold;
+    color: var(--input-label-color, #34495e);
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+
+.preset-controls input[type="text"],
+.preset-controls select {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--input-border-color, #bdc3c7);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: var(--main-bg-color); /* Ensure it matches theme */
+    color: var(--text-color); /* Ensure it matches theme */
+}
+.preset-controls input[type="text"]:focus,
+.preset-controls select:focus {
+   border-color: var(--input-focus-border-color, #3498db);
+   box-shadow: 0 0 0 2px var(--input-focus-shadow-color, rgba(52, 152, 219, 0.2));
+}
+
+
+.preset-controls button {
+    padding: 0.5rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: normal; /* Slightly less prominent than main calculate button */
+    background-color: var(--theme-toggle-bg, #7f8c8d); /* Using theme toggle as a neutral secondary */
+    color: var(--header-text-color, #ffffff); /* Assuming contrast with theme-toggle-bg */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.preset-controls button:hover {
+    background-color: var(--theme-toggle-hover-bg, #95a5a6);
+}
+
+#delete_preset_button {
+   background-color: var(--button-secondary-bg-color, #e74c3c); /* More distinct for delete */
+}
+#delete_preset_button:hover {
+   background-color: var(--button-secondary-hover-bg-color, #c0392b);
+}
