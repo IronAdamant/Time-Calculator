@@ -39,9 +39,28 @@
                 <!-- Results will be displayed here by JavaScript -->
             </div>
         </section>
+        <section id="presets-section">
+            <h2>Manage Presets</h2>
+            <div class="preset-controls">
+                <div>
+                    <label for="preset_name">Preset Name:</label>
+                    <input type="text" id="preset_name" name="preset_name" placeholder="e.g., Morning Commute">
+                    <button id="save_preset_button" type="button">Save Current as Preset</button>
+                </div>
+                <div>
+                    <label for="saved_presets_dropdown">Saved Presets:</label>
+                    <select id="saved_presets_dropdown">
+                        <option value="">-- Select a Preset --</option>
+                    </select>
+                    <button id="load_preset_button" type="button">Load Selected</button>
+                    <button id="delete_preset_button" type="button">Delete Selected</button>
+                </div>
+            </div>
+        </section>
     </main>
     <footer>
         <p>&copy; Time Calculator</p>
+        <p class="localstorage-warning">Note: Your theme preference, last used inputs, and saved presets are stored locally in your browser. Clearing your browser's data may remove these settings.</p>
     </footer>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

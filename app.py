@@ -7,6 +7,23 @@ from timecalculator.core import Time, Duration
 
 app = Flask(__name__)
 
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # A reasonably strict CSP.
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; " # Default policy for fetching resources
+        "script-src 'self'; "  # Allows scripts from 'self' (same origin)
+        "style-src 'self'; "   # Allows stylesheets from 'self'
+        "img-src 'self' data:; " # Allows images from 'self' and data: URIs
+        "font-src 'self'; "    # Allows fonts from 'self'
+        "connect-src 'self';"  # Allows connections (like fetch, XHR) to 'self' for API calls
+    )
+    # Optional: HTTP Strict Transport Security (HSTS)
+    # response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 @app.route('/')
 def index():
     return render_template('index.html')

@@ -96,11 +96,19 @@ header h1 {
 
 footer {
     text-align: center;
-    padding: 1rem 0;
+    padding: 1rem 0 1.5rem 0; /* Ensure enough padding at bottom */
     background: var(--footer-bg-color);
     color: var(--footer-text-color);
     width: 100%;
     margin-top: auto;
+}
+
+.localstorage-warning {
+    font-size: 0.75rem; /* Smaller font size */
+    color: var(--text-color); /* Use theme variable, but could be muted further */
+    opacity: 0.8; /* Slightly muted */
+    margin-top: 0.5rem; /* Space from the copyright line if in footer */
+    text-align: center; /* Consistent with other footer text if that's centered */
 }
 
 /* --- Main Content & Forms --- */
@@ -281,4 +289,73 @@ button:focus-visible {
         font-size: 0.9rem;
         right: 0.5rem;
     }
+}
+
+/* --- Presets Section --- */
+#presets-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--input-border-color, #bdc3c7);
+}
+
+#presets-section h2 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.preset-controls div {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Spacing between label, input, button */
+}
+
+.preset-controls label {
+    /* display: block; */ /* Already styled in #input-section but good to be specific if needed */
+    margin-bottom: 0; /* Override if #input-section label style has margin */
+    font-weight: bold;
+    color: var(--input-label-color, #34495e);
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+
+.preset-controls input[type="text"],
+.preset-controls select {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--input-border-color, #bdc3c7);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: var(--main-bg-color); /* Ensure it matches theme */
+    color: var(--text-color); /* Ensure it matches theme */
+}
+.preset-controls input[type="text"]:focus,
+.preset-controls select:focus {
+   border-color: var(--input-focus-border-color, #3498db);
+   box-shadow: 0 0 0 2px var(--input-focus-shadow-color, rgba(52, 152, 219, 0.2));
+}
+
+
+.preset-controls button {
+    padding: 0.5rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: normal; /* Slightly less prominent than main calculate button */
+    background-color: var(--theme-toggle-bg, #7f8c8d); /* Using theme toggle as a neutral secondary */
+    color: var(--header-text-color, #ffffff); /* Assuming contrast with theme-toggle-bg */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.preset-controls button:hover {
+    background-color: var(--theme-toggle-hover-bg, #95a5a6);
+}
+
+#delete_preset_button {
+   background-color: var(--button-secondary-bg-color, #e74c3c); /* More distinct for delete */
+}
+#delete_preset_button:hover {
+   background-color: var(--button-secondary-hover-bg-color, #c0392b);
 }
