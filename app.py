@@ -13,12 +13,32 @@ def index():
 
 @app.route('/api/calculate_time', methods=['POST'])
 def calculate_time_api():
-    data = request.get_json(silent=True) # Use silent=True
+    """
+    API endpoint to calculate a new time based on an initial time, duration, and optional days offset.
+    Expects a JSON payload with:
+    {
+        "initial_time": "H:MM AM/PM or HH:MM", (string, required)
+        "duration": "D days, H:MM:SS or H:MM:SS or H:MM or :SS", (string, required)
+        "days_offset": "N or N" (string or int, optional, defaults to 0)
+    }
+    Returns a JSON response:
+    Success (200):
+    {
+        "result_string": "Formatted new time with day information", (string)
+        "calculated_time": "H:MM AM/PM part of the new time", (string)
+        "days_numeric": total_days_passed (int)
+    }
+    Error (400 for client errors, 500 for server errors):
+    {
+        "error": "Error message describing the issue" (string)
+    }
+    """
+    data = request.get_json(silent=True) # Use silent=True to prevent Werkzeug from raising 400 for non-JSON or bad JSON
     if not data:
-        # This now handles:
-        # 1. Content-Type is not application/json (get_json returns None)
-        # 2. Content-Type is application/json, but data is malformed (get_json returns None)
-        # 3. Content-Type is application/json, but data is 'null' (get_json returns None) or empty.
+        # Handles cases where:
+        # 1. Content-Type header is not 'application/json'.
+        # 2. Request body is not valid JSON.
+        # 3. Request body is valid JSON 'null'.
         return jsonify({"error": "Invalid JSON payload or Content-Type (must be application/json and valid JSON)"}), 400
 
     initial_time_str = data.get('initial_time')
@@ -75,11 +95,13 @@ def calculate_time_api():
     # A direct TypeError for days_offset itself is less likely with the new logic.
     # The previous custom TypeError for days_offset is removed in favor of direct int conversion attempt.
     except Exception as e:
-        # Log the exception server-side
-        app.logger.error(f"Unexpected error: {e}", exc_info=True)
+        # Log the actual exception on the server side for debugging.
+        app.logger.error(f"Unexpected server error: {e}", exc_info=True)
         return jsonify({"error": "An unexpected server error occurred"}), 500
 
-# Removed custom BadRequest handler as silent=True for get_json handles it via 'if not data:'
+# Custom BadRequest handler (@app.errorhandler(BadRequest)) was removed because
+# request.get_json(silent=True) combined with the 'if not data:' check handles
+# most common JSON-related client errors by returning a 400 with a specific message.
 
 if __name__ == '__main__':
     # Note: For development only. A production server (e.g., Gunicorn) would be used for deployment.

@@ -1,19 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Element Selections ---
     const initialTimeInput = document.getElementById('initial_time');
     const durationInput = document.getElementById('duration');
     const daysOffsetInput = document.getElementById('days_offset');
     const calculateButton = document.getElementById('calculate_button');
     const resultArea = document.getElementById('result_area');
-
-    // Error span elements
     const initialTimeError = document.getElementById('initial_time_error');
     const durationError = document.getElementById('duration_error');
     const daysOffsetError = document.getElementById('days_offset_error');
-
-    // Clear button
     const clearButton = document.getElementById('clear_button');
-
-    // Theme Toggle Elements
     const themeToggleButton = document.getElementById('theme_toggle_button');
     const bodyElement = document.body;
 
@@ -21,14 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyTheme(theme) {
         if (theme === 'dark') {
             bodyElement.classList.add('dark-theme');
-            // themeToggleButton.textContent = '☀️'; // Example for icon change
         } else {
             bodyElement.classList.remove('dark-theme');
-            // themeToggleButton.textContent = '🌓'; // Example for icon change
         }
     }
 
-    // Load and apply stored theme on page load
     const storedTheme = localStorage.getItem('timeCalcTheme');
     if (storedTheme) {
         applyTheme(storedTheme);
@@ -36,56 +28,55 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme('light'); // Default to light theme
     }
 
-    // Event Listener for Theme Toggle
     if (themeToggleButton) {
         themeToggleButton.addEventListener('click', () => {
             bodyElement.classList.toggle('dark-theme');
-            let newTheme = 'light';
-            if (bodyElement.classList.contains('dark-theme')) {
-                newTheme = 'dark';
-            }
+            let newTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
             localStorage.setItem('timeCalcTheme', newTheme);
-            // applyTheme(newTheme); // Call applyTheme if button text/icon needs update based on theme
         });
     }
 
-    // --- Load Stored Input Values ---
+    // --- localStorage Handling for Inputs ---
     const storedInitialTime = localStorage.getItem('timeCalcInitialTime');
     const storedDuration = localStorage.getItem('timeCalcDuration');
     const storedDaysOffset = localStorage.getItem('timeCalcDaysOffset');
 
-    if (storedInitialTime) {
-        initialTimeInput.value = storedInitialTime;
-    }
-    if (storedDuration) {
-        durationInput.value = storedDuration;
-    }
-    if (storedDaysOffset) {
-        daysOffsetInput.value = storedDaysOffset;
-    }
+    if (storedInitialTime) initialTimeInput.value = storedInitialTime;
+    if (storedDuration) durationInput.value = storedDuration;
+    if (storedDaysOffset) daysOffsetInput.value = storedDaysOffset;
 
-    // Auto-focus on the first input field
+    // --- Initial Setup ---
     if(initialTimeInput) {
-        initialTimeInput.focus();
+        initialTimeInput.focus(); // Auto-focus on the first input field
     }
 
-    // --- Validation Functions ---
+    // --- Validation ---
     const initialTimeRegex = /^(\d{1,2}:\d{2}\s*(AM|PM)?|\d{1,2}:\d{2})$/i;
     const durationRegex = /^((\d+\s*days?,\s*)?\d{1,3}:\d{2}(:\d{2})?|:\d{2})$/i;
     const daysOffsetRegex = /^-?\d*$/;
 
+    /**
+     * Checks the current validity of all relevant input fields and enables/disables the
+     * calculate button accordingly.
+     */
     function checkFormValidityAndToggleButtonState() {
         const isInitialTimeCurrentlyValid = !initialTimeError.textContent && initialTimeInput.value.trim() !== '';
         const isDurationCurrentlyValid = !durationError.textContent && durationInput.value.trim() !== '';
-        const isDaysOffsetCurrentlyValid = !daysOffsetError.textContent;
+        const isDaysOffsetCurrentlyValid = !daysOffsetError.textContent; // Valid if error is empty (value can be empty)
 
-        if (isInitialTimeCurrentlyValid && isDurationCurrentlyValid && isDaysOffsetCurrentlyValid) {
-            calculateButton.disabled = false;
-        } else {
-            calculateButton.disabled = true;
-        }
+        calculateButton.disabled = !(isInitialTimeCurrentlyValid && isDurationCurrentlyValid && isDaysOffsetCurrentlyValid);
     }
 
+    /**
+     * Validates a single input field based on regex and required status.
+     * Updates error messages, ARIA attributes, and CSS classes.
+     * @param {HTMLInputElement} inputElement - The input field to validate.
+     * @param {HTMLElement} errorElement - The span element to display errors for this field.
+     * @param {RegExp} regex - The regular expression to test the field's value against.
+     * @param {string} errorMessage - The error message to display if regex validation fails.
+     * @param {boolean} [isRequired=true] - Whether the field is required to have a value.
+     * @returns {boolean} - True if the field is valid, false otherwise.
+     */
     function validateField(inputElement, errorElement, regex, errorMessage, isRequired = true) {
         const value = inputElement.value.trim();
         let isValid = true;
@@ -97,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inputElement.setAttribute('aria-invalid', 'true');
             inputElement.setAttribute('aria-describedby', errorElement.id);
             isValid = false;
-        } else if (value !== '' && !regex.test(value)) {
+        } else if (value !== '' && !regex.test(value)) { // Only test regex if not empty (and not failed isRequired check)
             errorElement.textContent = errorMessage;
             inputElement.classList.add('invalid');
             inputElement.classList.remove('valid');
@@ -111,27 +102,44 @@ document.addEventListener('DOMContentLoaded', () => {
             inputElement.removeAttribute('aria-invalid');
             if (value !== '') {
                 inputElement.classList.add('valid');
-            } else {
+            } else { // If optional and empty, it's not "valid" visually but also not "invalid"
                 inputElement.classList.remove('valid');
             }
         }
-        checkFormValidityAndToggleButtonState();
+        checkFormValidityAndToggleButtonState(); // Update button state after each field validation
         return isValid;
     }
 
-    // --- Event Listeners for Live Validation (on 'input') ---
+    /**
+     * Clears validation states (error messages, ARIA attributes, CSS classes) from input fields.
+     * @param {Array<Object>} fieldConfigurations - Array of objects, each with inputElement and errorElement.
+     */
+    function clearInputValidationStates(fieldConfigurations) {
+        fieldConfigurations.forEach(config => {
+            if (config.errorElement) config.errorElement.textContent = '';
+            if (config.inputElement) {
+                config.inputElement.classList.remove('invalid', 'valid');
+                config.inputElement.removeAttribute('aria-invalid');
+                config.inputElement.removeAttribute('aria-describedby');
+            }
+        });
+    }
+
+
+    // --- Event Listeners ---
     initialTimeInput.addEventListener('input', () => validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true));
     durationInput.addEventListener('input', () => validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true));
     daysOffsetInput.addEventListener('input', () => validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false));
 
-    // Initial check for button state on page load
+    // Initial check for button state on page load after potential localStorage loading
     checkFormValidityAndToggleButtonState();
 
-    // --- Calculate Button Logic ---
+    // --- API Interaction & Main Logic ---
     calculateButton.addEventListener('click', () => {
         resultArea.textContent = '';
         resultArea.classList.remove('error-message', 'success-message');
 
+        // Perform all validations again before API call (also updates UI and button state)
         const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
         const isDurationValid = validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true);
         const isDaysOffsetValid = validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false);
@@ -171,23 +179,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.result_string) {
                 resultArea.textContent = data.result_string;
                 resultArea.classList.add('success-message');
-                initialTimeInput.classList.remove('valid');
-                durationInput.classList.remove('valid');
-                daysOffsetInput.classList.remove('valid');
-                // Ensure ARIA attributes are cleared on success too
-                initialTimeInput.removeAttribute('aria-invalid');
-                initialTimeInput.removeAttribute('aria-describedby');
-                durationInput.removeAttribute('aria-invalid');
-                durationInput.removeAttribute('aria-describedby');
-                daysOffsetInput.removeAttribute('aria-invalid');
-                daysOffsetInput.removeAttribute('aria-describedby');
 
+                // Clear validation states on successful calculation
+                clearInputValidationStates([
+                    {inputElement: initialTimeInput, errorElement: initialTimeError},
+                    {inputElement: durationInput, errorElement: durationError},
+                    {inputElement: daysOffsetInput, errorElement: daysOffsetError}
+                ]);
 
                 localStorage.setItem('timeCalcInitialTime', initialTimeInput.value.trim());
                 localStorage.setItem('timeCalcDuration', durationInput.value.trim());
                 localStorage.setItem('timeCalcDaysOffset', daysOffsetInput.value.trim());
 
-            } else if (data.error) {
+            } else if (data.error) { // Should typically be caught by !response.ok
                 resultArea.textContent = `Error: ${data.error}`;
                 resultArea.classList.add('error-message');
             }
@@ -202,7 +206,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Clear Button Logic ---
     clearButton.addEventListener('click', () => {
         initialTimeInput.value = '';
         durationInput.value = '';
@@ -211,17 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
 
-        const errorSpans = [initialTimeError, durationError, daysOffsetError];
-        errorSpans.forEach(span => {
-            if(span) span.textContent = '';
-        });
-
-        const inputFields = [initialTimeInput, durationInput, daysOffsetInput];
-        inputFields.forEach(input => {
-            input.classList.remove('invalid', 'valid');
-            input.removeAttribute('aria-invalid');
-            input.removeAttribute('aria-describedby');
-        });
+        clearInputValidationStates([
+            {inputElement: initialTimeInput, errorElement: initialTimeError},
+            {inputElement: durationInput, errorElement: durationError},
+            {inputElement: daysOffsetInput, errorElement: daysOffsetError}
+        ]);
 
         localStorage.removeItem('timeCalcInitialTime');
         localStorage.removeItem('timeCalcDuration');

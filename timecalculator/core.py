@@ -34,13 +34,16 @@ class Duration:
         total_m = 0
         total_s = 0
 
-        # Pattern 1: Optional days, then H:M:S or H:M
-        # Example: "2 days, 10:20:30", "2 days, 10:20", "10:20:30", "10:20"
-        # Allows H to be > 23 (e.g. "48:00:00")
+        # Pattern 1: Matches optional days part, then hours, minutes, and optional seconds.
+        # - (?:(\d+)\s+days?,\s+)? : Optional non-capturing group for "D days, " part. \d+ captures day number.
+        # - (\d+): Capturing group for hours (allows multiple digits like "48" for 48 hours).
+        # - :(\d{1,2}): Capturing group for minutes (1 or 2 digits).
+        # - (?::(\d{1,2}))? : Optional non-capturing group for ":SS" part. \d{1,2} captures seconds.
         pat1 = re.compile(r"^(?:(\d+)\s+days?,\s+)?(\d+):(\d{1,2})(?::(\d{1,2}))?$")
         match1 = pat1.fullmatch(duration_str)
 
-        # Pattern 2: Only seconds :SS
+        # Pattern 2: Matches only seconds, formatted as ":SS".
+        # - :(\d{1,2})$ : Capturing group for seconds (1 or 2 digits).
         pat2 = re.compile(r"^:(\d{1,2})$")
         match2 = pat2.fullmatch(duration_str)
 
@@ -163,9 +166,15 @@ class Time:
             ValueError: If initial_time_str does not match either format,
                         if components are not integers, or if hours/minutes are out of valid range.
         """
-        # Pattern for "H:MM AM/PM" (12-hour format)
+        # Pattern for "H:MM AM/PM" (12-hour format).
+        # - ^(\d{1,2}): Start, hours (1 or 2 digits).
+        # - :(\d{2}): Minutes (exactly 2 digits).
+        # - \s+(AM|PM)$: Space, then AM or PM (case-insensitive due to flag).
         pat_12hr = re.compile(r"^(\d{1,2}):(\d{2})\s+(AM|PM)$", re.IGNORECASE)
-        # Pattern for "HH:MM" (24-hour format)
+
+        # Pattern for "HH:MM" (24-hour format).
+        # - ^(\d{1,2}): Start, hours (1 or 2 digits).
+        # - :(\d{2})$: Minutes (exactly 2 digits), end.
         pat_24hr = re.compile(r"^(\d{1,2}):(\d{2})$")
 
         match_12hr = pat_12hr.fullmatch(initial_time_str)
