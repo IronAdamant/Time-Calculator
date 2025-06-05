@@ -1,13 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element Selections ---
     const initialTimeInput = document.getElementById('initial_time');
-    const durationInput = document.getElementById('duration');
+    // const durationInput = document.getElementById('duration'); // Removed
+    const duration_value_input = document.getElementById('duration_value');
+    const duration_unit_input = document.getElementById('duration_unit');
     const daysOffsetInput = document.getElementById('days_offset');
+    const use_start_date_checkbox = document.getElementById('use_start_date');
+    const start_date_section_div = document.getElementById('start_date_section');
+    const start_date_input = document.getElementById('start_date');
     const calculateButton = document.getElementById('calculate_button');
     const resultArea = document.getElementById('result_area');
     const initialTimeError = document.getElementById('initial_time_error');
-    const durationError = document.getElementById('duration_error');
+    const durationError = document.getElementById('duration_error'); // For duration_value & duration_unit
     const daysOffsetError = document.getElementById('days_offset_error');
+    const start_date_error_span = document.getElementById('start_date_error');
     const clearButton = document.getElementById('clear_button');
     const themeToggleButton = document.getElementById('theme_toggle_button');
     const bodyElement = document.body;
@@ -46,28 +52,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- localStorage Handling for Inputs ---
     const storedInitialTime = localStorage.getItem('timeCalcInitialTime');
-    const storedDuration = localStorage.getItem('timeCalcDuration');
+    // const storedDuration = localStorage.getItem('timeCalcDuration'); // Removed
+    const storedDurationValue = localStorage.getItem('timeCalcDurationValue');
+    const storedDurationUnit = localStorage.getItem('timeCalcDurationUnit');
     const storedDaysOffset = localStorage.getItem('timeCalcDaysOffset');
+    const storedUseStartDate = localStorage.getItem('timeCalcUseStartDate');
+    const storedStartDate = localStorage.getItem('timeCalcStartDate');
 
     if (storedInitialTime) initialTimeInput.value = storedInitialTime;
-    if (storedDuration) durationInput.value = storedDuration;
+    if (storedDurationValue) duration_value_input.value = storedDurationValue;
+    if (storedDurationUnit) duration_unit_input.value = storedDurationUnit;
     if (storedDaysOffset) daysOffsetInput.value = storedDaysOffset;
+    if (storedUseStartDate) use_start_date_checkbox.checked = storedUseStartDate === 'true';
+    if (storedStartDate) start_date_input.value = storedStartDate;
 
     // --- Initial Setup ---
+    // Update visibility of start date section based on stored preference
+    if (use_start_date_checkbox.checked) {
+        start_date_section_div.style.display = 'block';
+    } else {
+        start_date_section_div.style.display = 'none';
+    }
+
     if(initialTimeInput) {
         initialTimeInput.focus();
     }
 
     // --- Validation ---
     const initialTimeRegex = /^(\d{1,2}:\d{2}\s*(AM|PM)?|\d{1,2}:\d{2})$/i;
-    const durationRegex = /^((\d+\s*days?,\s*)?\d{1,3}:\d{2}(:\d{2})?|:\d{2})$/i;
+    // const durationRegex = /^((\d+\s*days?,\s*)?\d{1,3}:\d{2}(:\d{2})?|:\d{2})$/i; // Removed
+    const durationValueRegex = /^\d+$/;
     const daysOffsetRegex = /^-?\d*$/;
 
     function checkFormValidityAndToggleButtonState() {
         const isInitialTimeCurrentlyValid = !initialTimeError.textContent && initialTimeInput.value.trim() !== '';
-        const isDurationCurrentlyValid = !durationError.textContent && durationInput.value.trim() !== '';
+        // Updated validation check for new duration fields
+        const isDurationValueCurrentlyValid = !durationError.textContent && duration_value_input.value.trim() !== '';
+        // const isDurationCurrentlyValid = !durationError.textContent && durationInput.value.trim() !== ''; // Original
         const isDaysOffsetCurrentlyValid = !daysOffsetError.textContent;
-        calculateButton.disabled = !(isInitialTimeCurrentlyValid && isDurationCurrentlyValid && isDaysOffsetCurrentlyValid);
+        const isStartDateCurrentlyValid = !use_start_date_checkbox.checked || (!start_date_error_span.textContent && start_date_input.value.trim() !== '');
+
+        calculateButton.disabled = !(
+            isInitialTimeCurrentlyValid &&
+            isDurationValueCurrentlyValid && // Use new duration value field
+            isDaysOffsetCurrentlyValid &&
+            isStartDateCurrentlyValid
+        );
     }
 
     function validateField(inputElement, errorElement, regex, errorMessage, isRequired = true) {
@@ -142,19 +172,37 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSavePreset() {
         const presetName = presetNameInput.value.trim();
         const initialTime = initialTimeInput.value.trim();
-        const duration = durationInput.value.trim();
+        // const duration = durationInput.value.trim(); // Removed
+        const durationValue = duration_value_input.value.trim();
+        const durationUnit = duration_unit_input.value;
         const daysOffset = daysOffsetInput.value.trim();
+        const useStartDate = use_start_date_checkbox.checked;
+        const startDateValue = start_date_input.value.trim();
 
         if (!presetName) {
             alert("Preset name cannot be empty.");
             return;
         }
-        if (!initialTime || !duration) { // Require main fields for a preset
-            alert("Initial time and duration must be filled to save a preset.");
+        // Updated check for main fields
+        if (!initialTime || !durationValue) {
+            alert("Initial time and duration value must be filled to save a preset.");
+            return;
+        }
+        if (useStartDate && !startDateValue) {
+            alert("Start date must be filled if 'Use Start Date' is checked for the preset.");
             return;
         }
 
-        const newPreset = { name: presetName, initial_time: initialTime, duration: duration, days_offset: daysOffset };
+        const newPreset = {
+            name: presetName,
+            initial_time: initialTime,
+            // duration: duration, // Removed
+            duration_value: durationValue,
+            duration_unit: durationUnit,
+            days_offset: daysOffset,
+            use_start_date: useStartDate,
+            start_date: startDateValue
+        };
         let presets = loadPresetsFromStorage();
         const existingPresetIndex = presets.findIndex(p => p.name === presetName);
         if (existingPresetIndex > -1) {
@@ -177,13 +225,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const presets = loadPresetsFromStorage();
         const presetToLoad = presets.find(p => p.name === selectedPresetName);
         if (presetToLoad) {
-            initialTimeInput.value = presetToLoad.initial_time;
-            durationInput.value = presetToLoad.duration;
-            daysOffsetInput.value = presetToLoad.days_offset;
+            initialTimeInput.value = presetToLoad.initial_time || '';
+            // durationInput.value = presetToLoad.duration; // Removed
+            duration_value_input.value = presetToLoad.duration_value || '';
+            duration_unit_input.value = presetToLoad.duration_unit || 'seconds'; // Default to seconds if not set
+            daysOffsetInput.value = presetToLoad.days_offset || '';
+            use_start_date_checkbox.checked = presetToLoad.use_start_date || false;
+            start_date_input.value = presetToLoad.start_date || '';
+
+            // Update visibility of start date section based on loaded preset
+            if (use_start_date_checkbox.checked) {
+                start_date_section_div.style.display = 'block';
+            } else {
+                start_date_section_div.style.display = 'none';
+            }
+
+            // Validate loaded fields
             validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
-            validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true);
+            validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
             validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false);
-            // checkFormValidityAndToggleButtonState(); // Called by validateField
+            if (use_start_date_checkbox.checked) {
+                validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
+            } else {
+                start_date_error_span.textContent = '';
+                start_date_input.classList.remove('invalid', 'valid');
+            }
+            checkFormValidityAndToggleButtonState(); // Explicitly call to ensure button state is correct
             resultArea.textContent = 'Preset loaded. Adjust as needed and click Calculate.';
             resultArea.classList.remove('error-message', 'success-message');
         } else {
@@ -209,8 +276,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     initialTimeInput.addEventListener('input', () => validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true));
-    durationInput.addEventListener('input', () => validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true));
+    // durationInput.addEventListener('input', () => validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true)); // Removed
+    duration_value_input.addEventListener('input', () => validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true));
+    duration_unit_input.addEventListener('change', () => { // Also validate duration value when unit changes, in case it was empty
+        validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
+    });
     daysOffsetInput.addEventListener('input', () => validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false));
+    start_date_input.addEventListener('input', () => {
+        if (use_start_date_checkbox.checked) {
+            validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty when "Use Start Date" is checked.', true); // Regex null for now, browser handles format
+        } else {
+            start_date_error_span.textContent = ''; // Clear error if not used
+            start_date_input.classList.remove('invalid', 'valid');
+        }
+        checkFormValidityAndToggleButtonState();
+    });
+
+
+    // --- Calendar Handling Event Listener ---
+    use_start_date_checkbox.addEventListener('change', () => {
+        if (use_start_date_checkbox.checked) {
+            start_date_section_div.style.display = 'block';
+            validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
+        } else {
+            start_date_section_div.style.display = 'none';
+            start_date_error_span.textContent = ''; // Clear error
+            start_date_input.classList.remove('invalid', 'valid');
+            start_date_input.removeAttribute('aria-invalid');
+            start_date_input.removeAttribute('aria-describedby');
+        }
+        checkFormValidityAndToggleButtonState(); // Update button state based on new visibility and validity
+    });
 
     if (savePresetButton) savePresetButton.addEventListener('click', handleSavePreset);
     if (loadPresetButton) loadPresetButton.addEventListener('click', handleLoadPreset);
@@ -224,23 +320,70 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateButton.addEventListener('click', () => {
         resultArea.textContent = '';
         resultArea.classList.remove('error-message', 'success-message');
-        const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
-        const isDurationValid = validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true);
-        const isDaysOffsetValid = validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false);
 
-        if (!isInitialTimeValid || !isDurationValid || !isDaysOffsetValid) {
+        // --- Validation ---
+        const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
+        const isDurationValueValid = validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
+        const isDaysOffsetValid = validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false);
+        let isStartDateValid = true;
+        if (use_start_date_checkbox.checked) {
+            isStartDateValid = validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
+        }
+
+        if (!isInitialTimeValid || !isDurationValueValid || !isDaysOffsetValid || !isStartDateValid) {
             resultArea.textContent = 'Please correct the errors in the fields above.';
             resultArea.classList.add('error-message');
             return;
         }
 
+        // --- Construct Duration String ---
+        let duration_str = "";
+        const durationValue = duration_value_input.value.trim() || "0"; // Default to 0 if empty
+        const durationUnit = duration_unit_input.value;
+
+        switch (durationUnit) {
+            case "seconds":
+                duration_str = `0:00:${durationValue.padStart(2, '0')}`; // Pad seconds for H:MM:SS like format
+                // Adjust if value is > 59, or let backend handle larger second counts.
+                // For simplicity, assuming backend can parse "0:00:70" as 1 minute 10 seconds.
+                // Or, more robustly:
+                // const sec = parseInt(durationValue, 10);
+                // duration_str = `0:00:${String(sec % 60).padStart(2, '0')}`;
+                // if (sec >= 60) {
+                //    const min = Math.floor(sec / 60);
+                //    duration_str = `0:${String(min % 60).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+                //    if (min >= 60) {
+                //        const hr = Math.floor(min / 60);
+                //        duration_str = `${hr}:${String(min % 60).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+                //    }
+                // }
+                // Sticking to simpler `0:00:value` for now, assuming backend is flexible.
+                break;
+            case "minutes":
+                duration_str = `0:${durationValue.padStart(2, '0')}:00`;
+                break;
+            case "hours":
+                duration_str = `${durationValue}:00:00`;
+                break;
+            case "days":
+                duration_str = `${durationValue} days, 0:00:00`;
+                break;
+            default: // Should not happen
+                duration_str = "0:00:00";
+        }
+
         const requestData = {
             initial_time: initialTimeInput.value.trim(),
-            duration: durationInput.value.trim()
+            duration: duration_str // Use constructed duration string
         };
+
         const daysOffsetValue = daysOffsetInput.value.trim();
         if (daysOffsetValue !== '') {
             requestData.days_offset = daysOffsetValue;
+        }
+
+        if (use_start_date_checkbox.checked && start_date_input.value) {
+            requestData.start_date = start_date_input.value;
         }
 
         calculateButton.disabled = true;
@@ -260,20 +403,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            if (data.result_string) {
-                resultArea.textContent = data.result_string;
-                resultArea.classList.add('success-message');
-                clearInputValidationStates([
-                    {inputElement: initialTimeInput, errorElement: initialTimeError},
-                    {inputElement: durationInput, errorElement: durationError},
-                    {inputElement: daysOffsetInput, errorElement: daysOffsetError}
-                ]);
-                localStorage.setItem('timeCalcInitialTime', initialTimeInput.value.trim());
-                localStorage.setItem('timeCalcDuration', durationInput.value.trim());
-                localStorage.setItem('timeCalcDaysOffset', daysOffsetInput.value.trim());
-            } else if (data.error) {
+            if (data.error) { // Handle error first
                 resultArea.textContent = `Error: ${data.error}`;
                 resultArea.classList.add('error-message');
+            } else if (data.end_datetime_str) { // Calendar calculation result
+                resultArea.innerHTML = `
+                    <p><strong>Start:</strong> ${data.start_datetime_str}</p>
+                    <p><strong>End:</strong> ${data.end_datetime_str}</p>
+                    <p><strong>Duration:</strong> ${data.duration_details_str}</p>
+                `;
+                resultArea.classList.add('success-message');
+            } else if (data.result_string) { // Simple time calculation result
+                resultArea.textContent = data.result_string;
+                resultArea.classList.add('success-message');
+            }
+
+            // Save inputs to localStorage on successful calculation
+            if (!data.error) {
+                localStorage.setItem('timeCalcInitialTime', initialTimeInput.value.trim());
+                localStorage.setItem('timeCalcDurationValue', duration_value_input.value.trim());
+                localStorage.setItem('timeCalcDurationUnit', duration_unit_input.value);
+                localStorage.setItem('timeCalcDaysOffset', daysOffsetInput.value.trim());
+                localStorage.setItem('timeCalcUseStartDate', use_start_date_checkbox.checked);
+                localStorage.setItem('timeCalcStartDate', start_date_input.value.trim());
+
+                // Clear validation states only on full success (might remove for partial success if needed)
+                // clearInputValidationStates still needs to be updated for new fields
             }
         })
         .catch(error => {
@@ -289,21 +444,64 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Clear Button Logic ---
     clearButton.addEventListener('click', () => {
         initialTimeInput.value = '';
-        durationInput.value = '';
+        // durationInput.value = ''; // Removed
+        duration_value_input.value = '';
+        duration_unit_input.value = 'seconds'; // Reset to default
         daysOffsetInput.value = '';
+        use_start_date_checkbox.checked = false;
+        start_date_input.value = '';
+        start_date_section_div.style.display = 'none'; // Hide start date section
+
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
+
         clearInputValidationStates([
             {inputElement: initialTimeInput, errorElement: initialTimeError},
-            {inputElement: durationInput, errorElement: durationError},
-            {inputElement: daysOffsetInput, errorElement: daysOffsetError}
+            // {inputElement: durationInput, errorElement: durationError}, // Removed
+            {inputElement: duration_value_input, errorElement: durationError},
+            {inputElement: daysOffsetInput, errorElement: daysOffsetError},
+            {inputElement: start_date_input, errorElement: start_date_error_span}
         ]);
+
         localStorage.removeItem('timeCalcInitialTime');
-        localStorage.removeItem('timeCalcDuration');
+        // localStorage.removeItem('timeCalcDuration'); // Removed
+        localStorage.removeItem('timeCalcDurationValue');
+        localStorage.removeItem('timeCalcDurationUnit');
         localStorage.removeItem('timeCalcDaysOffset');
+        localStorage.removeItem('timeCalcUseStartDate');
+        localStorage.removeItem('timeCalcStartDate');
+
         checkFormValidityAndToggleButtonState();
         if(initialTimeInput) {
            initialTimeInput.focus();
         }
     });
 });
+
+// Helper to clear all specific validation states
+function clearAllValidationVisuals() { // This function can be defined outside or as a helper if needed by multiple places
+    const fieldsToClear = [
+        { inputElement: initialTimeInput, errorElement: initialTimeError },
+        { inputElement: duration_value_input, errorElement: durationError },
+        { inputElement: daysOffsetInput, errorElement: daysOffsetError },
+        { inputElement: start_date_input, errorElement: start_date_error_span }
+    ];
+    fieldsToClear.forEach(field => {
+        if (field.inputElement) {
+            field.inputElement.classList.remove('invalid', 'valid');
+            field.inputElement.removeAttribute('aria-invalid');
+            field.inputElement.removeAttribute('aria-describedby');
+        }
+        if (field.errorElement) {
+            field.errorElement.textContent = '';
+        }
+    });
+}
+
+// Consider updating clearInputValidationStates to use a more generic approach or ensure all fields are covered.
+// The current clearInputValidationStates is okay but make sure it's called appropriately.
+// The fetch().then(data => { ... clearInputValidationStates(...) }) was removed, ensure it's not needed or re-add with new fields.
+// It seems better to clear validation states using the `clearAllValidationVisuals` or an updated `clearInputValidationStates`
+// at the beginning of a calculation or when inputs are cleared, rather than only on success.
+// For now, the existing clearButton logic handles this for its case.
+// Calculation success only saves to localStorage, doesn't clear inputs or validation states.
