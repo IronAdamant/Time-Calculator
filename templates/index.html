@@ -16,18 +16,21 @@
             <div>
                 <label for="initial_time">Initial Time:</label>
                 <input type="text" id="initial_time" name="initial_time" placeholder="e.g., 5:00 PM or 17:00">
-                        <span class="field-error-message" id="initial_time_error"></span>
+                <button type="button" id="set_now_button" class="inline-button" title="Set to current time">Now</button>
+                <span class="field-error-message" id="initial_time_error"></span>
             </div>
-            <div>
-                <label for="duration_value">Duration Value:</label>
-                <input type="number" id="duration_value" name="duration_value" placeholder="e.g., 10" min="0">
-                <label for="duration_unit">Duration Unit:</label>
-                <select id="duration_unit" name="duration_unit">
-                    <option value="seconds">Seconds</option>
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                </select>
+            <div> <!-- Existing parent div for the whole duration section -->
+                <label for="duration_value">Duration Value:</label> <!-- This label might now effectively describe both parts -->
+                <div class="duration-input-container">
+                    <input type="number" id="duration_value" name="duration_value" placeholder="e.g., 10" min="0">
+                    <!-- <label for="duration_unit">Duration Unit:</label> --> <!-- Removed/Commented out -->
+                    <select id="duration_unit" name="duration_unit">
+                        <option value="seconds">Seconds</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                    </select>
+                </div>
                 <span class="field-error-message" id="duration_error"></span>
             </div>
             <div>

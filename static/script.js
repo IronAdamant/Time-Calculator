@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const daysOffsetError = document.getElementById('days_offset_error');
     const start_date_error_span = document.getElementById('start_date_error');
     const clearButton = document.getElementById('clear_button');
+    const setNowButton = document.getElementById('set_now_button'); // Added "Set to Now" button
     const themeToggleButton = document.getElementById('theme_toggle_button');
     const bodyElement = document.body;
 
@@ -275,6 +276,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
+    if (setNowButton) {
+        setNowButton.addEventListener('click', () => {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
+            const formattedTime = hours + ':' + minutesStr + ' ' + ampm;
+
+            initialTimeInput.value = formattedTime;
+            validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
+            initialTimeInput.focus(); // Optionally focus the input after setting
+        });
+    }
+
     initialTimeInput.addEventListener('input', () => validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true));
     // durationInput.addEventListener('input', () => validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true)); // Removed
     duration_value_input.addEventListener('input', () => validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true));
