@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-F-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Time Calculator</h1>
+        <button id="theme_toggle_button" title="Toggle light/dark theme">🌓</button> <!-- Using an emoji as a simple icon -->
+    </header>
+    <main>
+        <section id="input-section">
+            <div>
+                <label for="initial_time">Initial Time:</label>
+                <input type="text" id="initial_time" name="initial_time" placeholder="e.g., 5:00 PM or 17:00">
+                        <span class="field-error-message" id="initial_time_error"></span>
+            </div>
+            <div>
+                <label for="duration">Duration:</label>
+                <input type="text" id="duration" name="duration" placeholder="e.g., 3:10:30 or 1 day, 2:00">
+                        <span class="field-error-message" id="duration_error"></span>
+            </div>
+            <div>
+                <label for="days_offset">Days Offset (optional):</label>
+                <input type="text" id="days_offset" name="days_offset" placeholder="e.g., 1, -1 (default 0)">
+                        <span class="field-error-message" id="days_offset_error"></span>
+            </div>
+                    <div class="button-group">
+                        <button id="calculate_button">Calculate</button>
+                        <button id="clear_button" type="button">Clear</button>
+                    </div>
+        </section>
+        <section id="output-section">
+            <h2>Result:</h2>
+            <div id="result_area" aria-live="polite">
+                <!-- Results will be displayed here by JavaScript -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; Time Calculator</p>
+    </footer>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

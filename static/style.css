@@ -1,0 +1,285 @@
+:root {
+    --bg-color: #eef1f5;
+    --text-color: #2c3e50;
+    --header-bg-color: #34495e;
+    --header-text-color: #ffffff;
+    --main-bg-color: #ffffff;
+    --main-shadow-color: rgba(0,0,0,0.15);
+    --input-label-color: #34495e;
+    --input-border-color: #bdc3c7;
+    --input-focus-border-color: #3498db;
+    --input-focus-shadow-color: rgba(52, 152, 219, 0.2);
+    --input-invalid-border-color: #e74c3c;
+    --input-invalid-bg-color: #fbeae5;
+    --input-valid-border-color: #2ecc71;
+    --input-valid-bg-color: #eafaf1;
+    --button-primary-bg-color: #3498db;
+    --button-primary-hover-bg-color: #2980b9;
+    --button-primary-text-color: #ffffff;
+    --button-secondary-bg-color: #e74c3c; /* For Clear button */
+    --button-secondary-hover-bg-color: #c0392b;
+    --button-secondary-text-color: #ffffff;
+    --button-disabled-bg-color: #bdc3c7;
+    --result-bg-color: #f8f9fa;
+    --result-border-color: #dee2e6;
+    --result-success-color: #1abc9c;
+    --result-success-border-color: #1abc9c;
+    --result-error-color: #e74c3c;
+    --result-error-border-color: #e74c3c;
+    --footer-bg-color: #2c3e50;
+    --footer-text-color: #ffffff;
+    --theme-toggle-bg: #7f8c8d;
+    --theme-toggle-hover-bg: #95a5a6;
+}
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    background: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 1rem 0;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative; /* For theme toggle button positioning */
+}
+
+header h1 {
+    margin: 0;
+}
+
+main {
+    width: 80%;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: var(--main-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--main-shadow-color);
+}
+
+/* Input Section */
+#input-section div {
+    margin-bottom: 1.75rem; /* Increased margin for error messages */
+}
+
+#input-section label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    color: var(--input-label-color);
+    font-size: 0.95rem;
+}
+
+#input-section input[type="text"] {
+    width: calc(100% - 16px);
+    padding: 0.5rem;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background-color: var(--main-bg-color); /* Match main background, or specific input bg */
+    color: var(--text-color); /* Ensure text is readable */
+}
+
+#input-section input[type="text"]:focus {
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
+}
+
+#input-section input[type="text"].invalid {
+    border-color: var(--input-invalid-border-color);
+    background-color: var(--input-invalid-bg-color);
+}
+
+#input-section input[type="text"].valid {
+    border-color: var(--input-valid-border-color);
+    background-color: var(--input-valid-bg-color);
+}
+
+.field-error-message {
+    display: block;
+    color: var(--result-error-color); /* Using result-error-color for consistency */
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+
+/* Button Group & Buttons */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.button-group button {
+    flex-grow: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+#calculate_button {
+    background: var(--button-primary-bg-color);
+    color: var(--button-primary-text-color);
+    /* padding, border, etc. inherited from .button-group button */
+}
+
+#calculate_button:hover {
+    background: var(--button-primary-hover-bg-color);
+}
+
+#calculate_button:active {
+    transform: translateY(1px);
+}
+
+#calculate_button:disabled {
+    background-color: var(--button-disabled-bg-color);
+    cursor: not-allowed;
+}
+
+#clear_button {
+    background-color: var(--button-secondary-bg-color);
+    color: var(--button-secondary-text-color);
+}
+
+#clear_button:hover {
+    background-color: var(--button-secondary-hover-bg-color);
+}
+
+#clear_button:active {
+   transform: translateY(1px);
+}
+
+/* Output Section */
+#output-section {
+    margin-top: 2rem;
+}
+
+#output-section h2 {
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+#result_area {
+    padding: 1rem;
+    background: var(--result-bg-color);
+    border: 1px solid var(--result-border-color);
+    border-radius: 4px;
+    min-height: 30px;
+    white-space: pre-wrap;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    transition: background-color 0.3s ease;
+    color: var(--text-color); /* Ensure result text color matches theme */
+}
+
+#result_area.success-message {
+    color: var(--result-success-color);
+    font-weight: bold;
+    border-left: 5px solid var(--result-success-border-color);
+}
+
+#result_area.error-message {
+    color: var(--result-error-color);
+    font-weight: bold;
+    border-left: 5px solid var(--result-error-border-color);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 1rem 0;
+    background: var(--footer-bg-color);
+    color: var(--footer-text-color);
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Theme Toggle Button */
+#theme_toggle_button {
+    background: var(--theme-toggle-bg);
+    color: var(--header-text-color);
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    transition: background-color 0.2s ease-in-out;
+}
+#theme_toggle_button:hover {
+    background: var(--theme-toggle-hover-bg);
+}
+
+
+/* Basic Responsiveness */
+@media (max-width: 768px) {
+    main {
+        width: 95%;
+        margin: 1rem auto;
+    }
+    #theme_toggle_button {
+        padding: 0.4rem 0.7rem; /* Slightly smaller on mobile */
+        font-size: 0.9rem;
+        right: 0.5rem;
+    }
+}
+
+/* Dark Theme Overrides */
+body.dark-theme {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-bg-color: #1f2b38;
+    --header-text-color: #ecf0f1;
+    --main-bg-color: #34495e;
+    --main-shadow-color: rgba(0,0,0,0.3);
+    --input-label-color: #ecf0f1;
+    --input-border-color: #7f8c8d;
+    --input-focus-border-color: #5dade2;
+    --input-focus-shadow-color: rgba(93, 173, 226, 0.25);
+    --input-invalid-border-color: #e74c3c; /* Stays similar for visibility */
+    --input-invalid-bg-color: #583c3c;
+    --input-valid-border-color: #2ecc71; /* Stays similar */
+    --input-valid-bg-color: #3c5848;
+    --button-primary-bg-color: #5dade2;
+    --button-primary-hover-bg-color: #4a90c2;
+    --button-secondary-bg-color: #c0392b; /* Stays similar for Clear */
+    --button-secondary-hover-bg-color: #a93226;
+    --button-disabled-bg-color: #7f8c8d;
+    --result-bg-color: #2c3e50; /* Darker background for results in dark mode */
+    --result-border-color: #7f8c8d;
+    --result-success-color: #2ecc71;
+    --result-success-border-color: #2ecc71;
+    --result-error-color: #e74c3c; /* Stays similar */
+    --result-error-border-color: #e74c3c;
+    --footer-bg-color: #1f2b38;
+    --footer-text-color: #ecf0f1;
+    --theme-toggle-bg: #bdc3c7;
+    --theme-toggle-hover-bg: #ecf0f1;
+}
+
+/* General button focus style for accessibility */
+button:focus-visible {
+    outline: 2px solid var(--input-focus-border-color, #3498db); /* Use variable if possible, fallback color */
+    outline-offset: 2px;
+}

@@ -1,33 +1,4 @@
-def add_time(initial_time, duration, days=0):
-  # Convert initial time to minutes
-  initial_hours, rest = initial_time.split(':')
-  initial_minutes, period = rest.split()
-  initial_total_minutes = (int(initial_hours) % 12 + 12 * (period.upper() == 'PM')) * 60 + int(initial_minutes)
-
-  # Convert duration to minutes
-  duration_hours, duration_minutes = map(int, duration.split(':'))
-  duration_total_minutes = duration_hours * 60 + duration_minutes
-
-  # Convert days to minutes
-  days_total_minutes = days * 24 * 60
-
-  # Calculate total time in minutes
-  total_minutes = initial_total_minutes + duration_total_minutes + days_total_minutes
-
-  # Convert total time back to days, hours, and minutes
-  total_days, total_minutes = divmod(total_minutes, 24 * 60)
-  total_hours, total_minutes = divmod(total_minutes, 60)
-
-  # Determine the period (AM/PM)
-  period = 'AM' if total_hours < 12 else 'PM'
-  total_hours = total_hours % 12 or 12
-
-  # Format the time string
-  time_str = f"{total_hours}:{str(total_minutes).zfill(2)} {period}"
-  if total_days > 0:
-      time_str += f", {total_days} day{'s' if total_days > 1 else ''} later"
-
-  return time_str
+from timecalculator.calculator import add_time
 
 # Test the function
 print(add_time('5:00 PM', '150:35'))
