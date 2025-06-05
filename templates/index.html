@@ -16,17 +16,36 @@
             <div>
                 <label for="initial_time">Initial Time:</label>
                 <input type="text" id="initial_time" name="initial_time" placeholder="e.g., 5:00 PM or 17:00">
-                        <span class="field-error-message" id="initial_time_error"></span>
+                <button type="button" id="set_now_button" class="inline-button" title="Set to current time">Now</button>
+                <span class="field-error-message" id="initial_time_error"></span>
             </div>
-            <div>
-                <label for="duration">Duration:</label>
-                <input type="text" id="duration" name="duration" placeholder="e.g., 3:10:30 or 1 day, 2:00">
-                        <span class="field-error-message" id="duration_error"></span>
+            <div> <!-- Existing parent div for the whole duration section -->
+                <label for="duration_value">Duration Value:</label> <!-- This label might now effectively describe both parts -->
+                <div class="duration-input-container">
+                    <input type="number" id="duration_value" name="duration_value" placeholder="e.g., 10" min="0">
+                    <!-- <label for="duration_unit">Duration Unit:</label> --> <!-- Removed/Commented out -->
+                    <select id="duration_unit" name="duration_unit">
+                        <option value="seconds">Seconds</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                    </select>
+                </div>
+                <span class="field-error-message" id="duration_error"></span>
             </div>
             <div>
                 <label for="days_offset">Days Offset (optional):</label>
                 <input type="text" id="days_offset" name="days_offset" placeholder="e.g., 1, -1 (default 0)">
                         <span class="field-error-message" id="days_offset_error"></span>
+            </div>
+            <div>
+                <label for="use_start_date">Use Start Date?</label>
+                <input type="checkbox" id="use_start_date" name="use_start_date">
+            </div>
+            <div id="start_date_section" style="display: none;">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date">
+                <span class="field-error-message" id="start_date_error"></span>
             </div>
                     <div class="button-group">
                         <button id="calculate_button">Calculate</button>
