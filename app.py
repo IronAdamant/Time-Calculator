@@ -149,8 +149,8 @@ def calculate_time_api():
             end_datetime_obj = full_start_datetime + duration_timedelta
 
             # Format Output Strings
-            start_dt_str_formatted = full_start_datetime.strftime('%Y-%m-%d %I:%M %p')
-            end_dt_str_formatted = end_datetime_obj.strftime('%Y-%m-%d %I:%M %p')
+            start_dt_str_formatted = full_start_datetime.strftime('%a, %Y-%m-%d %I:%M %p')
+            end_dt_str_formatted = end_datetime_obj.strftime('%a, %Y-%m-%d %I:%M %p')
             duration_details = str(duration_obj) # e.g., "X days, H:MM:SS"
 
             return jsonify({

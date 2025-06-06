@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const start_date_error_span = document.getElementById('start_date_error');
     const clearButton = document.getElementById('clear_button');
     const setNowButton = document.getElementById('set_now_button');
+    const copyResultButton = document.getElementById('copy_result_button'); // Added
     const themeToggleButton = document.getElementById('theme_toggle_button');
     const bodyElement = document.body;
 
@@ -67,12 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         start_date_section_div.style.display = 'none';
     }
+
     if(initialTimeInput) {
         initialTimeInput.focus();
     }
 
     const initialTimeRegex = /^(\d{1,2}:\d{2}\s*(AM|PM)?|\d{1,2}:\d{2})$/i;
-
     const durationValueRegex = /^\d+$/;
 
     function checkFormValidityAndToggleButtonState() {
@@ -188,6 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let presets = loadPresetsFromStorage();
         const existingPresetIndex = presets.findIndex(p => p.name === presetName);
         if (existingPresetIndex > -1) {
+            // Confirm before overwriting
+            if (!confirm("A preset with this name already exists. Overwrite it?")) {
+                return; // User clicked Cancel
+            }
             presets[existingPresetIndex] = newPreset;
         } else {
             presets.push(newPreset);
@@ -329,8 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkFormValidityAndToggleButtonState();
 
     calculateButton.addEventListener('click', () => {
-        resultArea.textContent = '';
+        resultArea.textContent = 'Calculating...';
         resultArea.classList.remove('error-message', 'success-message');
+        if (copyResultButton) copyResultButton.style.display = 'none'; // Hide copy button during calculation
 
         const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
         const isDurationValueValid = validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
@@ -349,11 +355,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const durationValue = duration_value_input.value.trim() || "0";
         const durationUnit = duration_unit_input.value;
         switch (durationUnit) {
-            case "seconds": duration_str = `0:00:${durationValue.padStart(2, '0')}`; break;
-            case "minutes": duration_str = `0:${durationValue.padStart(2, '0')}:00`; break;
-            case "hours": duration_str = `${durationValue}:00:00`; break;
-            case "days": duration_str = `${durationValue} days, 0:00:00`; break;
-            default: duration_str = "0:00:00";
+            case "seconds":
+                let sec = parseInt(durationValue, 10) || 0;
+                let min_s = 0; // minutes from seconds
+                let hr_s = 0;  // hours from seconds
+                if (sec >= 60) {
+                    min_s = Math.floor(sec / 60);
+                    sec = sec % 60;
+                }
+                if (min_s >= 60) {
+                    hr_s = Math.floor(min_s / 60);
+                    min_s = min_s % 60;
+                }
+                duration_str = `${hr_s}:${String(min_s).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+                break;
+            case "minutes":
+                let totalMin = parseInt(durationValue, 10) || 0;
+                let hr_m = 0; // hours from minutes
+                if (totalMin >= 60) {
+                    hr_m = Math.floor(totalMin / 60);
+                    totalMin = totalMin % 60;
+                }
+                duration_str = `${hr_m}:${String(totalMin).padStart(2, '0')}:00`;
+                break;
+            case "hours":
+                duration_str = `${durationValue}:00:00`;
+                break;
+            case "days":
+                duration_str = `${durationValue} days, 0:00:00`;
+                break;
+            default:
+                duration_str = "0:00:00";
         }
 
         const requestData = {
@@ -380,12 +412,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) {
                 resultArea.textContent = `Error: ${data.error}`;
                 resultArea.classList.add('error-message');
+                if (copyResultButton) copyResultButton.style.display = 'none';
             } else if (data.end_datetime_str) {
                 resultArea.innerHTML = `<p><strong>Start:</strong> ${data.start_datetime_str}</p><p><strong>End:</strong> ${data.end_datetime_str}</p><p><strong>Duration:</strong> ${data.duration_details_str}</p>`;
                 resultArea.classList.add('success-message');
+                if (copyResultButton) copyResultButton.style.display = 'inline-block';
             } else if (data.result_string) {
                 resultArea.textContent = data.result_string;
                 resultArea.classList.add('success-message');
+                if (copyResultButton) copyResultButton.style.display = 'inline-block';
             }
             if (!data.error) {
                 localStorage.setItem('timeCalcInitialTime', initialTimeInput.value.trim());
@@ -398,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => {
             resultArea.textContent = `Error: ${error.message || 'Failed to fetch. Check network or server.'}`;
             resultArea.classList.add('error-message');
+            if (copyResultButton) copyResultButton.style.display = 'none';
         })
         .finally(() => {
             calculateButton.textContent = 'Calculate';
@@ -417,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (startDatePickerInstance) {
             startDatePickerInstance.setDate({ clear: true });
         }
-
+        if (copyResultButton) copyResultButton.style.display = 'none'; // Hide on clear
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
 
@@ -437,6 +473,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
 // Note: clearAllValidationVisuals function was removed as it was unused and clearInputValidationStates handles specific cases.
 // If a global clear is needed later, it can be re-evaluated.
+
+    if (copyResultButton) {
+        copyResultButton.addEventListener('click', () => {
+            let textToCopy = '';
+            // If resultArea contains the structured HTML for date results
+            if (resultArea.querySelector('p strong')) {
+                const lines = [];
+                resultArea.querySelectorAll('p').forEach(p => {
+                    lines.push(p.textContent || p.innerText);
+                });
+                textToCopy = lines.join('\n'); // Newline separated
+            } else {
+                textToCopy = resultArea.textContent || resultArea.innerText;
+            }
+
+            if (textToCopy.trim() && textToCopy.trim() !== 'Calculating...' && !resultArea.classList.contains('error-message')) {
+                navigator.clipboard.writeText(textToCopy.trim())
+                    .then(() => {
+                        const originalText = copyResultButton.textContent;
+                        copyResultButton.textContent = 'Copied!';
+                        copyResultButton.disabled = true;
+                        setTimeout(() => {
+                            copyResultButton.textContent = originalText;
+                            copyResultButton.disabled = false;
+                        }, 2000); // Revert after 2 seconds
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                        alert('Failed to copy result. Please try again or copy manually.');
+                    });
+            }
+        });
+    }
+});

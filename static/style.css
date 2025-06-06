@@ -34,7 +34,8 @@
     --presets-divider-color: rgba(44, 62, 80, 0.15); /* New variable for presets section divider */
     --header-shadow-color: rgba(0,0,0,0.05); /* New variable for header shadow */
     --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Added for datepicker */
-  }
+}
+
 
 body.dark-theme {
     --bg-color: #2c3e50;
@@ -232,9 +233,21 @@ main {
     margin-top: 2rem;
 }
 
-#output-section h2 {
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
+.output-header {
+    display: flex;
+    justify-content: space-between; /* Pushes h2 and button to opposite ends */
+    align-items: center; /* Vertically aligns them */
+    margin-bottom: 0.5rem; /* Same as h2 had before */
+}
+
+.output-header h2 {
+    margin-bottom: 0; /* Remove bottom margin from h2 as .output-header now handles it */
+    color: var(--text-color); /* Ensure h2 color is consistent if not inherited */
+}
+
+#copy_result_button { /* Uses .inline-button styles primarily */
+    flex-shrink: 0; /* Prevent shrinking in flex layout */
+    /* margin-left is handled by .inline-button, adjust if needed or rely on space-between */
 }
 
 #result_area {
