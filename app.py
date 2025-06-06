@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from datetime import datetime, timedelta
 # from werkzeug.exceptions import BadRequest # No longer explicitly needed for get_json error handling
 # Ensure timecalculator package is discoverable.
 # If app.py is at the root, and timecalculator is a dir at the root,
@@ -60,7 +61,8 @@ def calculate_time_api():
 
     initial_time_str = data.get('initial_time')
     duration_str = data.get('duration')
-    days_offset_str = data.get('days_offset', '0') # Default to '0' as a string
+    # days_offset_str = data.get('days_offset', '0') # Removed
+    start_date_str = data.get('start_date') # Optional
 
     if not initial_time_str:
         return jsonify({"error": "Missing 'initial_time'"}), 400
@@ -68,47 +70,97 @@ def calculate_time_api():
         return jsonify({"error": "Missing 'duration'"}), 400
 
     try:
-        time_obj = Time(initial_time_str)
-        duration_obj = Duration(duration_str)
+        if not start_date_str:
+            # --- Existing logic without start_date ---
+            time_obj = Time(initial_time_str)
+            duration_obj = Duration(duration_str)
 
-        days_offset = 0 # Default
-        # days_offset_str comes from data.get('days_offset', '0')
-        # So it will be a string '0' by default, or actual value from JSON if provided.
+            # days_offset related logic removed
+            # days_offset = 0
+            # if isinstance(days_offset_str, (int, str)):
+            #     try:
+            #         days_offset = int(days_offset_str)
+            #     except ValueError:
+            #         return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer."}), 400
+            # else:
+            #     return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer."}), 400
 
-        if isinstance(days_offset_str, (int, str)):
+            new_time_obj, days_from_duration = time_obj + duration_obj
+            total_days_passed = days_from_duration # Removed + days_offset
+
+            calculated_time_str = str(new_time_obj)
+            result_display_str = calculated_time_str
+
+            if total_days_passed == 1:
+                result_display_str += " (next day)"
+            elif total_days_passed > 1:
+                result_display_str += f" ({total_days_passed} days later)"
+            elif total_days_passed == -1:
+                result_display_str += " (previous day)"
+            elif total_days_passed < -1:
+                result_display_str += f" ({abs(total_days_passed)} days prior)"
+
+            return jsonify({
+                "result_string": result_display_str,
+                "calculated_time": calculated_time_str,
+                "days_numeric": total_days_passed
+            }), 200
+        else:
+            # --- New logic with start_date ---
+            # Parse initial_time_str to get hours and minutes
+            time_obj_for_parsing = Time(initial_time_str) # Can raise ValueError
+            parsed_hours = time_obj_for_parsing.minutes_from_midnight // 60
+            parsed_minutes = time_obj_for_parsing.minutes_from_midnight % 60
+
+            # Parse start_date_str
             try:
-                days_offset = int(days_offset_str) # Handles int, or string like "1", "-2"
-            except ValueError: # Handles string like "abc"
-                return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer."}), 400
-        else: # It's a float, boolean, list, dict etc. from JSON
-            return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer."}), 400
+                start_datetime_obj = datetime.strptime(start_date_str, '%Y-%m-%d')
+            except ValueError: # Catches invalid date format for start_date_str
+                return jsonify({"error": f"Invalid start_date format. Expected YYYY-MM-DD, got '{start_date_str}'"}), 400
 
-        new_time_obj, days_from_duration = time_obj + duration_obj
-        total_days_passed = days_from_duration + days_offset
+            # Combine into a full start datetime
+            full_start_datetime = start_datetime_obj.replace(
+                hour=parsed_hours, minute=parsed_minutes, second=0, microsecond=0
+            )
 
-        calculated_time_str = str(new_time_obj)
-        result_display_str = calculated_time_str
+            # Process Duration
+            duration_obj = Duration(duration_str) # Can raise ValueError
+            duration_timedelta = timedelta(seconds=duration_obj.total_seconds)
 
-        # Update display string based on total_days_passed
-        if total_days_passed == 1:
-            result_display_str += " (next day)"
-        elif total_days_passed > 1:
-            result_display_str += f" ({total_days_passed} days later)"
-        elif total_days_passed == -1:
-            result_display_str += " (previous day)"
-        elif total_days_passed < -1:
-            result_display_str += f" ({abs(total_days_passed)} days prior)"
-        # No suffix if total_days_passed is 0
+            # Apply days_offset if provided and valid. This is an ADDITION to the duration itself.
+            # Note: The original logic applied days_offset on top of the duration's days.
+            # Here, we add it to the start_datetime before adding the main duration, or add it to the duration_timedelta.
+            # Let's add it to duration_timedelta for simplicity, consistent with how Duration might handle "X days".
+            # Or, more directly, add to full_start_datetime if it's purely a date shift.
+            # The original spec for days_offset was for the non-calendar case.
+            # For calendar case, if days_offset is to be supported, it should shift the full_start_datetime.
+            # All days_offset logic removed from this path as well.
+            # current_days_offset = 0
+            # if isinstance(days_offset_str, (int, str)) and days_offset_str != '0': # Only process if not default '0'
+            #     try:
+            #         current_days_offset = int(days_offset_str)
+            #         full_start_datetime += timedelta(days=current_days_offset)
+            #     except ValueError:
+            #          return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer when used with start_date."}), 400
+            # elif not isinstance(days_offset_str, (int, str)) and days_offset_str != '0':
+            #      return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer when used with start_date."}), 400
 
-        return jsonify({
-            "result_string": result_display_str,
-            "calculated_time": calculated_time_str,
-            "days_numeric": total_days_passed
-        }), 200
+            # Calculate End Datetime
+            end_datetime_obj = full_start_datetime + duration_timedelta
 
-    except ValueError as e: # Catches errors from Time/Duration init
-        return jsonify({"error": str(e)}), 400
-    # TypeError from int() if days_offset_str is e.g. a list is already caught by the new days_offset logic returning 400.
+            # Format Output Strings
+            start_dt_str_formatted = full_start_datetime.strftime('%Y-%m-%d %I:%M %p')
+            end_dt_str_formatted = end_datetime_obj.strftime('%Y-%m-%d %I:%M %p')
+            duration_details = str(duration_obj) # e.g., "X days, H:MM:SS"
+
+            return jsonify({
+                "start_datetime_str": start_dt_str_formatted,
+                "end_datetime_str": end_dt_str_formatted,
+                "duration_details_str": duration_details
+            }), 200
+
+    except ValueError as e: # Catches errors from Time/Duration init or other ValueErrors like strptime
+        return jsonify({"error": f"Error processing time/duration: {str(e)}"}), 400
     # A direct TypeError for days_offset itself is less likely with the new logic.
     # The previous custom TypeError for days_offset is removed in favor of direct int conversion attempt.
     except Exception as e:
