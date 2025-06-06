@@ -36,7 +36,6 @@
     --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Added for datepicker */
 }
 
-
 body.dark-theme {
     --bg-color: #2c3e50;
     --text-color: #ecf0f1;
@@ -261,6 +260,13 @@ main {
     line-height: 1.5;
     transition: background-color 0.3s ease;
     color: var(--text-color);
+}
+
+#result_area.calculating-message {
+    font-style: italic;
+    color: var(--input-label-color); /* Using input label color for subtlety */
+    /* Reset specific borders from success/error if they were applied */
+    border-left-color: var(--result-border-color); /* Revert to default border color */
 }
 
 #result_area.success-message {
