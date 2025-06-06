@@ -1,23 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element Selections ---
     const initialTimeInput = document.getElementById('initial_time');
-    // const durationInput = document.getElementById('duration'); // Removed
     const duration_value_input = document.getElementById('duration_value');
     const duration_unit_input = document.getElementById('duration_unit');
-    // const daysOffsetInput = document.getElementById('days_offset'); // Removed
     const use_start_date_checkbox = document.getElementById('use_start_date');
     const start_date_section_div = document.getElementById('start_date_section');
-    const start_date_input = document.getElementById('start_date');
+    const start_date_input = document.getElementById('start_date'); // Now hidden, value set by datepicker
     const calculateButton = document.getElementById('calculate_button');
     const resultArea = document.getElementById('result_area');
     const initialTimeError = document.getElementById('initial_time_error');
-    const durationError = document.getElementById('duration_error'); // For duration_value & duration_unit
-    // const daysOffsetError = document.getElementById('days_offset_error'); // Removed
+    const durationError = document.getElementById('duration_error');
     const start_date_error_span = document.getElementById('start_date_error');
     const clearButton = document.getElementById('clear_button');
-    const setNowButton = document.getElementById('set_now_button'); // Added "Set to Now" button
+    const setNowButton = document.getElementById('set_now_button');
     const themeToggleButton = document.getElementById('theme_toggle_button');
     const bodyElement = document.body;
+
+    let startDatePickerInstance = null;
 
     // Preset DOM Elements
     const presetNameInput = document.getElementById('preset_name');
@@ -26,10 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadPresetButton = document.getElementById('load_preset_button');
     const deletePresetButton = document.getElementById('delete_preset_button');
 
-    // --- Constants ---
     const PRESETS_STORAGE_KEY = 'timeCalcPresets';
 
-    // --- Theme Handling ---
     function applyTheme(theme) {
         if (theme === 'dark') {
             bodyElement.classList.add('dark-theme');
@@ -51,66 +48,60 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- localStorage Handling for Inputs ---
     const storedInitialTime = localStorage.getItem('timeCalcInitialTime');
-    // const storedDuration = localStorage.getItem('timeCalcDuration'); // Removed
     const storedDurationValue = localStorage.getItem('timeCalcDurationValue');
     const storedDurationUnit = localStorage.getItem('timeCalcDurationUnit');
-    // const storedDaysOffset = localStorage.getItem('timeCalcDaysOffset'); // Removed
     const storedUseStartDate = localStorage.getItem('timeCalcUseStartDate');
     const storedStartDate = localStorage.getItem('timeCalcStartDate');
 
     if (storedInitialTime) initialTimeInput.value = storedInitialTime;
     if (storedDurationValue) duration_value_input.value = storedDurationValue;
     if (storedDurationUnit) duration_unit_input.value = storedDurationUnit;
-    // if (storedDaysOffset) daysOffsetInput.value = storedDaysOffset; // Removed
     if (storedUseStartDate) use_start_date_checkbox.checked = storedUseStartDate === 'true';
     if (storedStartDate) start_date_input.value = storedStartDate;
 
-    // --- Initial Setup ---
+    // RESOLVED CONFLICT 1: Initial Setup
     // Update visibility of start date section based on stored preference
     if (use_start_date_checkbox.checked) {
         start_date_section_div.style.display = 'block';
     } else {
         start_date_section_div.style.display = 'none';
     }
-
     if(initialTimeInput) {
         initialTimeInput.focus();
     }
 
-    // --- Validation ---
     const initialTimeRegex = /^(\d{1,2}:\d{2}\s*(AM|PM)?|\d{1,2}:\d{2})$/i;
-    // const durationRegex = /^((\d+\s*days?,\s*)?\d{1,3}:\d{2}(:\d{2})?|:\d{2})$/i; // Removed
+
     const durationValueRegex = /^\d+$/;
-    // const daysOffsetRegex = /^-?\d*$/; // Removed
 
     function checkFormValidityAndToggleButtonState() {
         const isInitialTimeCurrentlyValid = !initialTimeError.textContent && initialTimeInput.value.trim() !== '';
-        // Updated validation check for new duration fields
         const isDurationValueCurrentlyValid = !durationError.textContent && duration_value_input.value.trim() !== '';
-        // const isDaysOffsetCurrentlyValid = !daysOffsetError.textContent; // Removed
         const isStartDateCurrentlyValid = !use_start_date_checkbox.checked || (!start_date_error_span.textContent && start_date_input.value.trim() !== '');
-
-        calculateButton.disabled = !(
-            isInitialTimeCurrentlyValid &&
-            isDurationValueCurrentlyValid && // Use new duration value field
-            // isDaysOffsetCurrentlyValid && // Removed
-            isStartDateCurrentlyValid
-        );
+        calculateButton.disabled = !(isInitialTimeCurrentlyValid && isDurationValueCurrentlyValid && isStartDateCurrentlyValid);
     }
 
     function validateField(inputElement, errorElement, regex, errorMessage, isRequired = true) {
         const value = inputElement.value.trim();
         let isValid = true;
+        // Attempt to get label text more safely if previousElementSibling is not a label or doesn't exist
+        let labelText = "Field"; // Default text
+        if (inputElement.id && document.querySelector(`label[for='${inputElement.id}']`)) {
+             labelText = document.querySelector(`label[for='${inputElement.id}']`).textContent.replace(':','');
+        } else if (inputElement.previousElementSibling && inputElement.previousElementSibling.tagName === 'LABEL') {
+            labelText = inputElement.previousElementSibling.textContent.replace(':','');
+        }
+
+
         if (isRequired && value === '') {
-            errorElement.textContent = `${inputElement.previousElementSibling.textContent.replace(':','')} cannot be empty.`;
+            errorElement.textContent = `${labelText} cannot be empty.`;
             inputElement.classList.add('invalid');
             inputElement.classList.remove('valid');
             inputElement.setAttribute('aria-invalid', 'true');
             inputElement.setAttribute('aria-describedby', errorElement.id);
             isValid = false;
-        } else if (value !== '' && !regex.test(value)) {
+        } else if (value !== '' && regex && !regex.test(value)) {
             errorElement.textContent = errorMessage;
             inputElement.classList.add('invalid');
             inputElement.classList.remove('valid');
@@ -143,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Preset Management Functions ---
     function loadPresetsFromStorage() {
         const presetsJson = localStorage.getItem(PRESETS_STORAGE_KEY);
         try {
@@ -172,10 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleSavePreset() {
         const presetName = presetNameInput.value.trim();
         const initialTime = initialTimeInput.value.trim();
-        // const duration = durationInput.value.trim(); // Removed
         const durationValue = duration_value_input.value.trim();
         const durationUnit = duration_unit_input.value;
-        // const daysOffset = daysOffsetInput.value.trim(); // Removed
         const useStartDate = use_start_date_checkbox.checked;
         const startDateValue = start_date_input.value.trim();
 
@@ -183,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Preset name cannot be empty.");
             return;
         }
-        // Updated check for main fields
         if (!initialTime || !durationValue) {
             alert("Initial time and duration value must be filled to save a preset.");
             return;
@@ -194,14 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const newPreset = {
-            name: presetName,
-            initial_time: initialTime,
-            // duration: duration, // Removed
-            duration_value: durationValue,
-            duration_unit: durationUnit,
-            // days_offset: daysOffset, // Removed
-            use_start_date: useStartDate,
-            start_date: startDateValue
+            name: presetName, initial_time: initialTime,
+            duration_value: durationValue, duration_unit: durationUnit,
+            use_start_date: useStartDate, start_date: startDateValue
         };
         let presets = loadPresetsFromStorage();
         const existingPresetIndex = presets.findIndex(p => p.name === presetName);
@@ -216,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Preset saved!");
     }
 
+    // RESOLVED CONFLICT 2: handleLoadPreset function
     function handleLoadPreset() {
         const selectedPresetName = savedPresetsDropdown.value;
         if (!selectedPresetName) {
@@ -226,31 +209,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const presetToLoad = presets.find(p => p.name === selectedPresetName);
         if (presetToLoad) {
             initialTimeInput.value = presetToLoad.initial_time || '';
-            // durationInput.value = presetToLoad.duration; // Removed
             duration_value_input.value = presetToLoad.duration_value || '';
-            duration_unit_input.value = presetToLoad.duration_unit || 'seconds'; // Default to seconds if not set
-            // daysOffsetInput.value = presetToLoad.days_offset || ''; // Removed
+            duration_unit_input.value = presetToLoad.duration_unit || 'seconds';
+
+            // Set checkbox state and hidden input value first
             use_start_date_checkbox.checked = presetToLoad.use_start_date || false;
             start_date_input.value = presetToLoad.start_date || '';
 
-            // Update visibility of start date section based on loaded preset
-            if (use_start_date_checkbox.checked) {
-                start_date_section_div.style.display = 'block';
-            } else {
-                start_date_section_div.style.display = 'none';
-            }
+            // Trigger the checkbox's change event to handle UI updates & datepicker state
+            // This will call the datepicker logic including setDate if needed.
+            use_start_date_checkbox.dispatchEvent(new Event('change'));
 
-            // Validate loaded fields
+            // Validate other fields
             validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
             validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
-            // validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false); // Removed
-            if (use_start_date_checkbox.checked) {
-                validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
-            } else {
-                start_date_error_span.textContent = '';
-                start_date_input.classList.remove('invalid', 'valid');
-            }
-            checkFormValidityAndToggleButtonState(); // Explicitly call to ensure button state is correct
+
+            // Note: start_date_input validation is now handled by the checkbox's change listener
+
+            checkFormValidityAndToggleButtonState(); // Ensure button state is updated after all changes
             resultArea.textContent = 'Preset loaded. Adjust as needed and click Calculate.';
             resultArea.classList.remove('error-message', 'success-message');
         } else {
@@ -260,13 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleDeletePreset() {
         const selectedPresetName = savedPresetsDropdown.value;
-        if (!selectedPresetName) {
-            alert("Please select a preset to delete.");
-            return;
-        }
-        if (!confirm(`Are you sure you want to delete the preset "${selectedPresetName}"?`)) {
-            return;
-        }
+        if (!selectedPresetName) { alert("Please select a preset to delete."); return; }
+        if (!confirm(`Are you sure you want to delete the preset "${selectedPresetName}"?`)) { return; }
         let presets = loadPresetsFromStorage();
         presets = presets.filter(p => p.name !== selectedPresetName);
         savePresetsToStorage(presets);
@@ -274,143 +245,121 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Preset deleted.");
     }
 
-    // --- Event Listeners ---
     if (setNowButton) {
         setNowButton.addEventListener('click', () => {
             const now = new Date();
             let hours = now.getHours();
             const minutes = now.getMinutes();
             const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = hours % 12; hours = hours ? hours : 12;
             const minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
-            const formattedTime = hours + ':' + minutesStr + ' ' + ampm;
-
-            initialTimeInput.value = formattedTime;
+            initialTimeInput.value = `${hours}:${minutesStr} ${ampm}`;
             validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
-            initialTimeInput.focus(); // Optionally focus the input after setting
+            initialTimeInput.focus();
         });
     }
 
     initialTimeInput.addEventListener('input', () => validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true));
-    // durationInput.addEventListener('input', () => validateField(durationInput, durationError, durationRegex, 'Invalid format. Use H:MM:SS, D days, H:MM, etc.', true)); // Removed
     duration_value_input.addEventListener('input', () => validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true));
-    duration_unit_input.addEventListener('change', () => { // Also validate duration value when unit changes, in case it was empty
-        validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
-    });
-    // daysOffsetInput.addEventListener('input', () => validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false)); // Removed
-    start_date_input.addEventListener('input', () => {
-        if (use_start_date_checkbox.checked) {
-            validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty when "Use Start Date" is checked.', true); // Regex null for now, browser handles format
-        } else {
-            start_date_error_span.textContent = ''; // Clear error if not used
-            start_date_input.classList.remove('invalid', 'valid');
-        }
-        checkFormValidityAndToggleButtonState();
-    });
+    duration_unit_input.addEventListener('change', () => validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true));
 
-    // Also add a 'change' event listener for start_date_input for robustness with date pickers
-    start_date_input.addEventListener('change', () => {
-        if (use_start_date_checkbox.checked) {
-            // Using the more generic error message here, consistent with the 'use_start_date_checkbox' listener
-            validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
-        } else {
-            start_date_error_span.textContent = ''; // Clear error if not used
-            start_date_input.classList.remove('invalid', 'valid');
-        }
-        checkFormValidityAndToggleButtonState();
-    });
+    // RESOLVED CONFLICT 3: Removed event listeners for hidden start_date_input
+    // start_date_input.addEventListener('input', () => { ... }); // Removed
+    // start_date_input.addEventListener('change', () => { ... }); // Removed
 
-
-    // --- Calendar Handling Event Listener ---
+    // RESOLVED CONFLICT 4: use_start_date_checkbox event listener
     use_start_date_checkbox.addEventListener('change', () => {
         if (use_start_date_checkbox.checked) {
             start_date_section_div.style.display = 'block';
+            if (!startDatePickerInstance) {
+                const calendarContainer = document.getElementById('inline_calendar_container');
+                const datepickerInput = start_date_input;
+
+                startDatePickerInstance = new Datepicker(calendarContainer, {
+                    format: 'yyyy-mm-dd',
+                    todayHighlight: true,
+                });
+
+                calendarContainer.addEventListener('changeDate', (event) => {
+                    if (event.detail && event.detail.date) {
+                        datepickerInput.value = Datepicker.formatDate(event.detail.date, 'yyyy-mm-dd');
+                        validateField(datepickerInput, start_date_error_span, null, 'Start date cannot be empty.', true);
+                    } else if (event.detail && event.detail.date === undefined) {
+                        datepickerInput.value = '';
+                        validateField(datepickerInput, start_date_error_span, null, 'Start date cannot be empty.', true);
+                    }
+                    checkFormValidityAndToggleButtonState(); // Call this after value change and validation
+                });
+            }
+
+            if (start_date_input.value && startDatePickerInstance) {
+                 try {
+                    startDatePickerInstance.setDate(start_date_input.value);
+                } catch(e) {
+                    console.error("Error setting date on datepicker from existing input value:", e);
+                    start_date_input.value = '';
+                    if (startDatePickerInstance) {
+                        startDatePickerInstance.setDate({clear: true});
+                    }
+                }
+            } else if (startDatePickerInstance && !start_date_input.value) {
+                startDatePickerInstance.setDate({clear: true}); // Clear if input is empty but picker was visible
+            }
             validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
         } else {
             start_date_section_div.style.display = 'none';
-            start_date_error_span.textContent = ''; // Clear error
+            start_date_error_span.textContent = '';
             start_date_input.classList.remove('invalid', 'valid');
             start_date_input.removeAttribute('aria-invalid');
             start_date_input.removeAttribute('aria-describedby');
         }
-        checkFormValidityAndToggleButtonState(); // Update button state based on new visibility and validity
+        checkFormValidityAndToggleButtonState();
     });
+
+    // Initial dispatch if checkbox is checked on load (e.g. from localStorage)
+    if (use_start_date_checkbox.checked) {
+        use_start_date_checkbox.dispatchEvent(new Event('change'));
+    }
 
     if (savePresetButton) savePresetButton.addEventListener('click', handleSavePreset);
     if (loadPresetButton) loadPresetButton.addEventListener('click', handleLoadPreset);
     if (deletePresetButton) deletePresetButton.addEventListener('click', handleDeletePreset);
 
-    // Initial population of dropdown and button state check
     populatePresetDropdown();
     checkFormValidityAndToggleButtonState();
 
-    // --- Calculate Button Logic (API Interaction) ---
     calculateButton.addEventListener('click', () => {
         resultArea.textContent = '';
         resultArea.classList.remove('error-message', 'success-message');
 
-        // --- Validation ---
         const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
         const isDurationValueValid = validateField(duration_value_input, durationError, durationValueRegex, 'Must be a non-negative number.', true);
-        // const isDaysOffsetValid = validateField(daysOffsetInput, daysOffsetError, daysOffsetRegex, 'Must be an integer (e.g., 1, -2).', false); // Removed
         let isStartDateValid = true;
         if (use_start_date_checkbox.checked) {
             isStartDateValid = validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
         }
 
-        if (!isInitialTimeValid || !isDurationValueValid || /*!isDaysOffsetValid ||*/ !isStartDateValid) { // Removed isDaysOffsetValid
+        if (!isInitialTimeValid || !isDurationValueValid || !isStartDateValid) {
             resultArea.textContent = 'Please correct the errors in the fields above.';
             resultArea.classList.add('error-message');
             return;
         }
 
-        // --- Construct Duration String ---
         let duration_str = "";
-        const durationValue = duration_value_input.value.trim() || "0"; // Default to 0 if empty
+        const durationValue = duration_value_input.value.trim() || "0";
         const durationUnit = duration_unit_input.value;
-
         switch (durationUnit) {
-            case "seconds":
-                duration_str = `0:00:${durationValue.padStart(2, '0')}`; // Pad seconds for H:MM:SS like format
-                // Adjust if value is > 59, or let backend handle larger second counts.
-                // For simplicity, assuming backend can parse "0:00:70" as 1 minute 10 seconds.
-                // Or, more robustly:
-                // const sec = parseInt(durationValue, 10);
-                // duration_str = `0:00:${String(sec % 60).padStart(2, '0')}`;
-                // if (sec >= 60) {
-                //    const min = Math.floor(sec / 60);
-                //    duration_str = `0:${String(min % 60).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
-                //    if (min >= 60) {
-                //        const hr = Math.floor(min / 60);
-                //        duration_str = `${hr}:${String(min % 60).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
-                //    }
-                // }
-                // Sticking to simpler `0:00:value` for now, assuming backend is flexible.
-                break;
-            case "minutes":
-                duration_str = `0:${durationValue.padStart(2, '0')}:00`;
-                break;
-            case "hours":
-                duration_str = `${durationValue}:00:00`;
-                break;
-            case "days":
-                duration_str = `${durationValue} days, 0:00:00`;
-                break;
-            default: // Should not happen
-                duration_str = "0:00:00";
+            case "seconds": duration_str = `0:00:${durationValue.padStart(2, '0')}`; break;
+            case "minutes": duration_str = `0:${durationValue.padStart(2, '0')}:00`; break;
+            case "hours": duration_str = `${durationValue}:00:00`; break;
+            case "days": duration_str = `${durationValue} days, 0:00:00`; break;
+            default: duration_str = "0:00:00";
         }
 
         const requestData = {
             initial_time: initialTimeInput.value.trim(),
-            duration: duration_str // Use constructed duration string
+            duration: duration_str
         };
-
-        // const daysOffsetValue = daysOffsetInput.value.trim(); // Removed
-        // if (daysOffsetValue !== '') { // Removed
-        //     requestData.days_offset = daysOffsetValue; // Removed
-        // } // Removed
-
         if (use_start_date_checkbox.checked && start_date_input.value) {
             requestData.start_date = start_date_input.value;
         }
@@ -424,40 +373,26 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(requestData)
         })
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.error || `Server error: ${response.status}`);
-                });
-            }
+            if (!response.ok) { return response.json().then(err => { throw new Error(err.error || `Server error: ${response.status}`); }); }
             return response.json();
         })
         .then(data => {
-            if (data.error) { // Handle error first
+            if (data.error) {
                 resultArea.textContent = `Error: ${data.error}`;
                 resultArea.classList.add('error-message');
-            } else if (data.end_datetime_str) { // Calendar calculation result
-                resultArea.innerHTML = `
-                    <p><strong>Start:</strong> ${data.start_datetime_str}</p>
-                    <p><strong>End:</strong> ${data.end_datetime_str}</p>
-                    <p><strong>Duration:</strong> ${data.duration_details_str}</p>
-                `;
+            } else if (data.end_datetime_str) {
+                resultArea.innerHTML = `<p><strong>Start:</strong> ${data.start_datetime_str}</p><p><strong>End:</strong> ${data.end_datetime_str}</p><p><strong>Duration:</strong> ${data.duration_details_str}</p>`;
                 resultArea.classList.add('success-message');
-            } else if (data.result_string) { // Simple time calculation result
+            } else if (data.result_string) {
                 resultArea.textContent = data.result_string;
                 resultArea.classList.add('success-message');
             }
-
-            // Save inputs to localStorage on successful calculation
             if (!data.error) {
                 localStorage.setItem('timeCalcInitialTime', initialTimeInput.value.trim());
                 localStorage.setItem('timeCalcDurationValue', duration_value_input.value.trim());
                 localStorage.setItem('timeCalcDurationUnit', duration_unit_input.value);
-                // localStorage.setItem('timeCalcDaysOffset', daysOffsetInput.value.trim()); // Removed
                 localStorage.setItem('timeCalcUseStartDate', use_start_date_checkbox.checked);
                 localStorage.setItem('timeCalcStartDate', start_date_input.value.trim());
-
-                // Clear validation states only on full success (might remove for partial success if needed)
-                // clearInputValidationStates still needs to be updated for new fields
             }
         })
         .catch(error => {
@@ -470,16 +405,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Clear Button Logic ---
+    // RESOLVED CONFLICT 5: clearButton listener
     clearButton.addEventListener('click', () => {
         initialTimeInput.value = '';
-        // durationInput.value = ''; // Removed
         duration_value_input.value = '';
-        duration_unit_input.value = 'seconds'; // Reset to default
-        // daysOffsetInput.value = ''; // Removed
+        duration_unit_input.value = 'seconds';
         use_start_date_checkbox.checked = false;
         start_date_input.value = '';
-        start_date_section_div.style.display = 'none'; // Hide start date section
+        start_date_section_div.style.display = 'none';
+
+        if (startDatePickerInstance) {
+            startDatePickerInstance.setDate({ clear: true });
+        }
 
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
@@ -487,49 +424,19 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInputValidationStates([
             {inputElement: initialTimeInput, errorElement: initialTimeError},
             {inputElement: duration_value_input, errorElement: durationError},
-            // {inputElement: daysOffsetInput, errorElement: daysOffsetError}, // Removed
             {inputElement: start_date_input, errorElement: start_date_error_span}
         ]);
 
         localStorage.removeItem('timeCalcInitialTime');
-        // localStorage.removeItem('timeCalcDuration'); // Removed
         localStorage.removeItem('timeCalcDurationValue');
         localStorage.removeItem('timeCalcDurationUnit');
-        // localStorage.removeItem('timeCalcDaysOffset'); // Removed
         localStorage.removeItem('timeCalcUseStartDate');
         localStorage.removeItem('timeCalcStartDate');
-
         checkFormValidityAndToggleButtonState();
-        if(initialTimeInput) {
-           initialTimeInput.focus();
-        }
+        if(initialTimeInput) { initialTimeInput.focus(); }
     });
 });
 
-// Helper to clear all specific validation states
-function clearAllValidationVisuals() { // This function can be defined outside or as a helper if needed by multiple places
-    const fieldsToClear = [
-        { inputElement: initialTimeInput, errorElement: initialTimeError },
-        { inputElement: duration_value_input, errorElement: durationError },
-        // { inputElement: daysOffsetInput, errorElement: daysOffsetError }, // Removed
-        { inputElement: start_date_input, errorElement: start_date_error_span }
-    ];
-    fieldsToClear.forEach(field => {
-        if (field.inputElement) {
-            field.inputElement.classList.remove('invalid', 'valid');
-            field.inputElement.removeAttribute('aria-invalid');
-            field.inputElement.removeAttribute('aria-describedby');
-        }
-        if (field.errorElement) {
-            field.errorElement.textContent = '';
-        }
-    });
-}
 
-// Consider updating clearInputValidationStates to use a more generic approach or ensure all fields are covered.
-// The current clearInputValidationStates is okay but make sure it's called appropriately.
-// The fetch().then(data => { ... clearInputValidationStates(...) }) was removed, ensure it's not needed or re-add with new fields.
-// It seems better to clear validation states using the `clearAllValidationVisuals` or an updated `clearInputValidationStates`
-// at the beginning of a calculation or when inputs are cleared, rather than only on success.
-// For now, the existing clearButton logic handles this for its case.
-// Calculation success only saves to localStorage, doesn't clear inputs or validation states.
+// Note: clearAllValidationVisuals function was removed as it was unused and clearInputValidationStates handles specific cases.
+// If a global clear is needed later, it can be re-evaluated.

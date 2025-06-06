@@ -4,6 +4,7 @@
     <meta charset="UTF-F-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vanillajs-datepicker/1.3.4/css/datepicker.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -39,7 +40,8 @@
             </div>
             <div id="start_date_section" style="display: none;">
                 <label for="start_date">Start Date:</label>
-                <input type="date" id="start_date" name="start_date">
+                <div id="inline_calendar_container"></div>
+                <input type="hidden" id="start_date" name="start_date">
                 <span class="field-error-message" id="start_date_error"></span>
             </div>
                     <div class="button-group">
@@ -76,6 +78,7 @@
         <p>&copy; Time Calculator</p>
         <p class="localstorage-warning">Note: Your theme preference, last used inputs, and saved presets are stored locally in your browser. Clearing your browser's data may remove these settings.</p>
     </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanillajs-datepicker/1.3.4/js/datepicker-full.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

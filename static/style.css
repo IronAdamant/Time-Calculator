@@ -33,7 +33,8 @@
     --theme-toggle-hover-bg: #95a5a6;
     --presets-divider-color: rgba(44, 62, 80, 0.15); /* New variable for presets section divider */
     --header-shadow-color: rgba(0,0,0,0.05); /* New variable for header shadow */
-}
+    --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Added for datepicker */
+  }
 
 body.dark-theme {
     --bg-color: #2c3e50;
@@ -71,7 +72,7 @@ body.dark-theme {
 
 /* --- General Styles --- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: var(--body-font);
     line-height: 1.7;
     margin: 0;
     padding: 0;
@@ -446,4 +447,158 @@ button:focus-visible {
 }
 #delete_preset_button:hover {
    background-color: var(--button-secondary-hover-bg-color, #c0392b);
+}
+
+/* --- Vanillajs Datepicker Styling --- */
+
+/* Make the inline calendar container blend with the form */
+#inline_calendar_container {
+    margin-top: 0.5rem; /* Space below the "Start Date" label */
+}
+
+/* General Datepicker Container */
+.datepicker {
+    font-family: var(--body-font); /* Ensure font consistency */
+    background-color: var(--main-bg-color); /* Use card background */
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px; /* Match other input border-radius */
+    padding: 0.5rem; /* Some internal padding */
+    box-shadow: 0 4px 12px var(--main-shadow-color); /* Optional: a subtle shadow */
+    width: 100%; /* Make it take the full width of its container */
+    box-sizing: border-box;
+}
+
+/* Header: Month/Year and Navigation */
+.datepicker .datepicker-header {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--input-border-color); /* Subtle separator */
+    margin-bottom: 0.5rem;
+}
+
+.datepicker .datepicker-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.5rem; /* Padding within the controls bar */
+}
+
+.datepicker .datepicker-controls .button,
+.datepicker .datepicker-controls .prev-btn,
+.datepicker .datepicker-controls .next-btn,
+.datepicker .datepicker-controls .view-switch {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--text-color);
+    font-weight: 600;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.datepicker .datepicker-controls .button:hover,
+.datepicker .datepicker-controls .prev-btn:hover,
+.datepicker .datepicker-controls .next-btn:hover,
+.datepicker .datepicker-controls .view-switch:hover {
+    background-color: var(--input-focus-shadow-color);
+    color: var(--button-primary-bg-color);
+}
+
+/* View Switch (Month Year title) */
+.datepicker .datepicker-controls .view-switch {
+    font-size: 1rem;
+}
+
+/* Days of the Week (Mon, Tue, etc.) */
+.datepicker .datepicker-view .week,
+.datepicker .datepicker-view .days-of-week {
+    display: flex;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid var(--input-border-color);
+}
+
+.datepicker .datepicker-view .dow,
+.datepicker .datepicker-view .days-of-week .day-name {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--input-label-color);
+    padding: 0.25rem 0;
+}
+
+/* Individual Day Cells */
+.datepicker .datepicker-view .days .day {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.datepicker .datepicker-view .days .day:hover:not(.disabled):not(.selected) {
+    background-color: var(--input-focus-shadow-color);
+    border-color: var(--input-focus-border-color);
+}
+
+/* Other month days (previous/next month) */
+.datepicker .datepicker-view .days .day.prev,
+.datepicker .datepicker-view .days .day.next {
+    color: var(--button-disabled-bg-color);
+}
+.datepicker .datepicker-view .days .day.prev:hover,
+.datepicker .datepicker-view .days .day.next:hover {
+    background-color: var(--input-focus-shadow-color);
+}
+
+
+/* Today's Date */
+.datepicker .datepicker-view .days .day.today:not(.selected) {
+    font-weight: bold;
+    border: 1px solid var(--input-label-color);
+    color: var(--input-label-color);
+}
+.datepicker .datepicker-view .days .day.today:not(.selected):hover {
+    background-color: var(--input-focus-shadow-color);
+    border: 1px solid var(--button-primary-bg-color);
+}
+
+
+/* Selected Date */
+.datepicker .datepicker-view .days .day.selected,
+.datepicker .datepicker-view .days .day.selected:hover {
+    background-color: var(--button-primary-bg-color);
+    color: var(--button-primary-text-color);
+    border-color: var(--button-primary-hover-bg-color);
+    font-weight: bold;
+}
+
+/* Disabled Date */
+.datepicker .datepicker-view .days .day.disabled,
+.datepicker .datepicker-view .days .day.disabled:hover {
+    color: var(--button-disabled-bg-color);
+    background-color: transparent;
+    cursor: default;
+    border-color: transparent;
+}
+
+/* Ensure responsiveness if calendar is too wide */
+@media (max-width: 400px) {
+    .datepicker .datepicker-view .days .day {
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    .datepicker .datepicker-controls .button,
+    .datepicker .datepicker-controls .prev-btn,
+    .datepicker .datepicker-controls .next-btn,
+    .datepicker .datepicker-controls .view-switch {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.9rem;
+    }
 }
