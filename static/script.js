@@ -454,14 +454,15 @@ document.addEventListener('DOMContentLoaded', () => {
             startDatePickerInstance.setDate({ clear: true });
         }
         if (copyResultButton) copyResultButton.style.display = 'none'; // Hide on clear
-
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
+
         clearInputValidationStates([
             {inputElement: initialTimeInput, errorElement: initialTimeError},
             {inputElement: duration_value_input, errorElement: durationError},
             {inputElement: start_date_input, errorElement: start_date_error_span}
         ]);
+
         localStorage.removeItem('timeCalcInitialTime');
         localStorage.removeItem('timeCalcDurationValue');
         localStorage.removeItem('timeCalcDurationUnit');
