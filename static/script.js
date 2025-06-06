@@ -382,17 +382,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             // If there's a value in the hidden input (e.g. from localStorage or manual set before enabling), update datepicker
-            if (start_date_input.value) {
+            if (start_date_input.value && startDatePickerInstance) { // Ensure instance exists
                  try {
                     startDatePickerInstance.setDate(start_date_input.value);
                 } catch(e) {
                     console.error("Error setting date on datepicker from existing input value:", e);
-                    start_date_input.value = ''; // Clear if invalid
+                    start_date_input.value = ''; // Clear if invalid to prevent further issues
+                    if (startDatePickerInstance) { // Check again in case setDate itself caused issues with the instance
+                        startDatePickerInstance.setDate({clear: true}); // Explicitly clear UI
+                    }
+                    // Re-validate the now-empty field
+                    validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
+                    // checkFormValidityAndToggleButtonState(); // validateField calls this already
                 }
+            } else if (startDatePickerInstance) { // If no value in input, but instance exists
+                // Ensure datepicker is also clear or shows today by default.
+                // Most datepickers default to today or remain blank if no date is set.
+                // If explicit clearing is desired when input is empty:
+                // startDatePickerInstance.setDate({clear: true});
             } else {
-                // If no value, ensure datepicker is also clear or shows today by default
+                // If no value, and no instance yet, nothing to set.
                 // startDatePickerInstance.setDate({clear: true}); // or let it default to today
             }
+            // Initial validation call when checkbox is checked and section becomes visible
             validateField(start_date_input, start_date_error_span, null, 'Start date cannot be empty.', true);
         } else {
             start_date_section_div.style.display = 'none';
