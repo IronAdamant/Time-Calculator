@@ -336,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateButton.addEventListener('click', () => {
         resultArea.textContent = 'Calculating...';
         resultArea.classList.remove('error-message', 'success-message');
+        resultArea.classList.add('calculating-message'); // ADD THIS
         if (copyResultButton) copyResultButton.style.display = 'none'; // Hide copy button during calculation
 
         const isInitialTimeValid = validateField(initialTimeInput, initialTimeError, initialTimeRegex, 'Invalid format. Use H:MM AM/PM or HH:MM.', true);
@@ -409,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
+            resultArea.classList.remove('calculating-message'); // ADD THIS
             if (data.error) {
                 resultArea.textContent = `Error: ${data.error}`;
                 resultArea.classList.add('error-message');
@@ -431,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => {
+            resultArea.classList.remove('calculating-message'); // ADD THIS
             resultArea.textContent = `Error: ${error.message || 'Failed to fetch. Check network or server.'}`;
             resultArea.classList.add('error-message');
             if (copyResultButton) copyResultButton.style.display = 'none';
@@ -454,15 +457,14 @@ document.addEventListener('DOMContentLoaded', () => {
             startDatePickerInstance.setDate({ clear: true });
         }
         if (copyResultButton) copyResultButton.style.display = 'none'; // Hide on clear
+
         resultArea.textContent = '';
         resultArea.classList.remove('success-message', 'error-message');
-
         clearInputValidationStates([
             {inputElement: initialTimeInput, errorElement: initialTimeError},
             {inputElement: duration_value_input, errorElement: durationError},
             {inputElement: start_date_input, errorElement: start_date_error_span}
         ]);
-
         localStorage.removeItem('timeCalcInitialTime');
         localStorage.removeItem('timeCalcDurationValue');
         localStorage.removeItem('timeCalcDurationUnit');
@@ -490,7 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 textToCopy = resultArea.textContent || resultArea.innerText;
             }
 
-            if (textToCopy.trim() && textToCopy.trim() !== 'Calculating...' && !resultArea.classList.contains('error-message')) {
+            if (textToCopy.trim() &&
+                textToCopy.trim() !== 'Calculating...' &&
+                !resultArea.classList.contains('error-message')) {
                 navigator.clipboard.writeText(textToCopy.trim())
                     .then(() => {
                         const originalText = copyResultButton.textContent;
