@@ -5,11 +5,11 @@
     --header-bg-color: #34495e;
     --header-text-color: #ffffff;
     --main-bg-color: #ffffff;
-    --main-shadow-color: rgba(0,0,0,0.15);
+    --main-shadow-color: rgba(0,0,0,0.1); /* Updated alpha from 0.15 */
     --input-label-color: #34495e;
     --input-border-color: #bdc3c7;
     --input-focus-border-color: #3498db;
-    --input-focus-shadow-color: rgba(52, 152, 219, 0.2);
+    --input-focus-shadow-color: rgba(52, 152, 219, 0.15); /* Alpha updated from 0.2 */
     --input-invalid-border-color: #e74c3c;
     --input-invalid-bg-color: #fbeae5;
     --input-valid-border-color: #2ecc71;
@@ -31,6 +31,9 @@
     --footer-text-color: #ffffff;
     --theme-toggle-bg: #7f8c8d;
     --theme-toggle-hover-bg: #95a5a6;
+    --presets-divider-color: rgba(44, 62, 80, 0.15); /* New variable for presets section divider */
+    --header-shadow-color: rgba(0,0,0,0.05); /* New variable for header shadow */
+    --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Added for datepicker */
 }
 
 body.dark-theme {
@@ -39,11 +42,11 @@ body.dark-theme {
     --header-bg-color: #1f2b38;
     --header-text-color: #ecf0f1;
     --main-bg-color: #34495e;
-    --main-shadow-color: rgba(0,0,0,0.3);
+    --main-shadow-color: rgba(0,0,0,0.2); /* Updated alpha from 0.3 */
     --input-label-color: #ecf0f1;
     --input-border-color: #7f8c8d;
     --input-focus-border-color: #5dade2;
-    --input-focus-shadow-color: rgba(93, 173, 226, 0.25);
+    --input-focus-shadow-color: rgba(93, 173, 226, 0.2); /* Alpha updated from 0.25 */
     --input-invalid-border-color: #e74c3c; /* Stays similar for visibility */
     --input-invalid-bg-color: #583c3c;
     --input-valid-border-color: #2ecc71; /* Stays similar */
@@ -63,12 +66,14 @@ body.dark-theme {
     --footer-text-color: #ecf0f1;
     --theme-toggle-bg: #bdc3c7;
     --theme-toggle-hover-bg: #ecf0f1;
+    --presets-divider-color: rgba(236, 240, 241, 0.15); /* New variable for presets section divider - dark theme */
+    --header-shadow-color: rgba(0,0,0,0.15); /* New variable for header shadow - dark theme */
 }
 
 /* --- General Styles --- */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
+    font-family: var(--body-font);
+    line-height: 1.7;
     margin: 0;
     padding: 0;
     background-color: var(--bg-color);
@@ -86,7 +91,7 @@ header {
     padding: 1rem 0;
     text-align: center;
     width: 100%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px var(--header-shadow-color); /* Updated box-shadow to use new variable */
     position: relative; /* For theme toggle button positioning */
 }
 
@@ -105,7 +110,7 @@ footer {
 
 .localstorage-warning {
     font-size: 0.75rem; /* Smaller font size */
-    color: var(--text-color); /* Use theme variable, but could be muted further */
+    color: var(--footer-text-color); /* Changed from --text-color to match footer context */
     opacity: 0.8; /* Slightly muted */
     margin-top: 0.5rem; /* Space from the copyright line if in footer */
     text-align: center; /* Consistent with other footer text if that's centered */
@@ -116,14 +121,14 @@ main {
     width: 80%;
     max-width: 600px;
     margin: 2rem auto;
-    padding: 1rem;
+    padding: 2rem; /* Updated padding */
     background: var(--main-bg-color);
     border-radius: 8px;
-    box-shadow: 0 4px 12px var(--main-shadow-color);
+    box-shadow: 0 8px 24px var(--main-shadow-color); /* Updated box-shadow */
 }
 
 #input-section div { /* Container for label, input, and error span */
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem; /* Updated margin-bottom */
 }
 
 #input-section label {
@@ -136,9 +141,9 @@ main {
 
 #input-section input[type="text"] {
     width: calc(100% - 16px); /* Full width minus some padding, assuming box-sizing: border-box */
-    padding: 0.5rem;
+    padding: 0.75rem; /* Updated padding */
     border: 1px solid var(--input-border-color);
-    border-radius: 4px;
+    border-radius: 6px; /* Updated border-radius */
     box-sizing: border-box;
     transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     background-color: var(--main-bg-color);
@@ -148,7 +153,61 @@ main {
 #input-section input[type="text"]:focus {
     border-color: var(--input-focus-border-color);
     box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
+    outline: none; /* Remove default outline when using box-shadow */
 }
+
+/* --- Duration Input Group Styling --- */
+#input-section .duration-input-container {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 0.5rem; /* Space between input and select */
+    width: 100%; /* Make the container take full width of its parent div */
+}
+
+#input-section .duration-input-container input[type="number"],
+#input-section .duration-input-container select {
+    /* Common styles for number input and select in the duration container */
+    padding: 0.75rem; /* Updated padding */
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px; /* Updated border-radius */
+    box-sizing: border-box;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+    font-family: inherit; /* Ensure consistent font */
+    font-size: inherit;   /* Ensure consistent font size */
+    line-height: inherit; /* Ensure consistent line height */
+}
+
+#input-section .duration-input-container input[type="number"] {
+    flex-grow: 1; /* Value input takes more space */
+    /* width: auto; /* Allow flexbox to manage width, override if needed */
+}
+
+#input-section .duration-input-container select {
+    flex-grow: 0;
+    flex-shrink: 0; /* Prevent shrinking */
+    flex-basis: 120px; /* Adjust width as needed, e.g., for "Seconds", "Minutes" */
+}
+
+/* Focus styles for number input and select */
+#input-section .duration-input-container input[type="number"]:focus,
+#input-section .duration-input-container select:focus {
+    border-color: var(--input-focus-border-color);
+    box-shadow: 0 0 0 2px var(--input-focus-shadow-color);
+    outline: none; /* Remove default outline */
+}
+
+/* Validation styles for number input in duration container */
+#input-section .duration-input-container input[type="number"].invalid {
+    border-color: var(--input-invalid-border-color);
+    background-color: var(--input-invalid-bg-color);
+}
+
+#input-section .duration-input-container input[type="number"].valid {
+    border-color: var(--input-valid-border-color);
+    background-color: var(--input-valid-bg-color);
+}
+
 
 /* --- Validation & Feedback --- */
 #input-section input[type="text"].invalid {
@@ -173,16 +232,28 @@ main {
     margin-top: 2rem;
 }
 
-#output-section h2 {
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
+.output-header {
+    display: flex;
+    justify-content: space-between; /* Pushes h2 and button to opposite ends */
+    align-items: center; /* Vertically aligns them */
+    margin-bottom: 0.5rem; /* Same as h2 had before */
+}
+
+.output-header h2 {
+    margin-bottom: 0; /* Remove bottom margin from h2 as .output-header now handles it */
+    color: var(--text-color); /* Ensure h2 color is consistent if not inherited */
+}
+
+#copy_result_button { /* Uses .inline-button styles primarily */
+    flex-shrink: 0; /* Prevent shrinking in flex layout */
+    /* margin-left is handled by .inline-button, adjust if needed or rely on space-between */
 }
 
 #result_area {
-    padding: 1rem;
+    padding: 1.25rem; /* Updated padding */
     background: var(--result-bg-color);
     border: 1px solid var(--result-border-color);
-    border-radius: 4px;
+    border-radius: 6px; /* Updated border-radius */
     min-height: 30px;
     white-space: pre-wrap;
     font-size: 1.05rem;
@@ -191,16 +262,23 @@ main {
     color: var(--text-color);
 }
 
+#result_area.calculating-message {
+    font-style: italic;
+    color: var(--input-label-color); /* Using input label color for subtlety */
+    /* Reset specific borders from success/error if they were applied */
+    border-left-color: var(--result-border-color); /* Revert to default border color */
+}
+
 #result_area.success-message {
     color: var(--result-success-color);
     font-weight: bold;
-    border-left: 5px solid var(--result-success-border-color);
+    border-left: 4px solid var(--result-success-border-color); /* Updated border-left width */
 }
 
 #result_area.error-message {
     color: var(--result-error-color);
     font-weight: bold;
-    border-left: 5px solid var(--result-error-border-color);
+    border-left: 4px solid var(--result-error-border-color); /* Updated border-left width */
 }
 
 
@@ -208,18 +286,42 @@ main {
 .button-group {
     display: flex;
     gap: 1rem;
-    margin-top: 1.5rem;
+    margin-top: 2rem; /* Updated margin-top */
 }
 
 .button-group button { /* Common styles for buttons in a group */
     flex-grow: 1;
-    padding: 0.7rem;
+    padding: 0.8rem 1.5rem; /* Updated padding */
     border: none;
-    border-radius: 4px;
+    border-radius: 6px; /* Updated border-radius */
     cursor: pointer;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600; /* Updated font-weight */
     transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+/* Inline button style (e.g., "Now" button) */
+.inline-button {
+    padding: 0.4rem 0.8rem; /* Updated padding */
+    font-size: 0.85rem;
+    font-weight: 500; /* Added font-weight */
+    margin-left: 0.5rem; /* Space it from the input field */
+    background-color: var(--theme-toggle-bg); /* Using a neutral, secondary button color */
+    color: var(--header-text-color); /* Assuming good contrast with theme-toggle-bg */
+    border: 1px solid var(--input-border-color); /* Subtle border */
+    border-radius: 6px; /* Updated border-radius */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease; /* Added transform transition */
+    /* Ensure it aligns well if input fields have specific heights or vertical alignment */
+    vertical-align: middle; /* Or baseline, adjust as needed */
+}
+
+.inline-button:hover {
+    background-color: var(--theme-toggle-hover-bg);
+}
+
+.inline-button:active { /* Added active state for inline button */
+    transform: scale(0.98);
 }
 
 #calculate_button {
@@ -232,7 +334,8 @@ main {
 }
 
 #calculate_button:active {
-    transform: translateY(1px);
+    /* transform: translateY(1px); */ /* Removed */
+    transform: scale(0.98); /* Optional: new subtle active state */
 }
 
 #calculate_button:disabled {
@@ -250,7 +353,8 @@ main {
 }
 
 #clear_button:active {
-   transform: translateY(1px);
+   /* transform: translateY(1px); */ /* Removed */
+   transform: scale(0.98); /* Optional: new subtle active state */
 }
 
 #theme_toggle_button {
@@ -295,7 +399,7 @@ button:focus-visible {
 #presets-section {
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid var(--input-border-color, #bdc3c7);
+    border-top: 1px solid var(--presets-divider-color); /* Updated border-top to use new variable */
 }
 
 #presets-section h2 {
@@ -321,9 +425,9 @@ button:focus-visible {
 .preset-controls input[type="text"],
 .preset-controls select {
     flex-grow: 1;
-    padding: 0.5rem;
+    padding: 0.75rem; /* Updated padding */
     border: 1px solid var(--input-border-color, #bdc3c7);
-    border-radius: 4px;
+    border-radius: 6px; /* Updated border-radius */
     box-sizing: border-box;
     font-family: inherit;
     font-size: inherit;
@@ -338,19 +442,23 @@ button:focus-visible {
 
 
 .preset-controls button {
-    padding: 0.5rem 0.8rem;
+    padding: 0.6rem 1rem; /* Updated padding */
     border: none;
-    border-radius: 4px;
+    border-radius: 6px; /* Updated border-radius */
     cursor: pointer;
     font-size: 0.9rem;
-    font-weight: normal; /* Slightly less prominent than main calculate button */
+    font-weight: normal; /* Slightly less prominent than main calculate button - Kept as is */
     background-color: var(--theme-toggle-bg, #7f8c8d); /* Using theme toggle as a neutral secondary */
     color: var(--header-text-color, #ffffff); /* Assuming contrast with theme-toggle-bg */
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease; /* Added transform transition */
 }
 
 .preset-controls button:hover {
     background-color: var(--theme-toggle-hover-bg, #95a5a6);
+}
+
+.preset-controls button:active { /* Added active state for preset buttons */
+    transform: scale(0.98);
 }
 
 #delete_preset_button {
@@ -358,4 +466,158 @@ button:focus-visible {
 }
 #delete_preset_button:hover {
    background-color: var(--button-secondary-hover-bg-color, #c0392b);
+}
+
+/* --- Vanillajs Datepicker Styling --- */
+
+/* Make the inline calendar container blend with the form */
+#inline_calendar_container {
+    margin-top: 0.5rem; /* Space below the "Start Date" label */
+}
+
+/* General Datepicker Container */
+.datepicker {
+    font-family: var(--body-font); /* Ensure font consistency */
+    background-color: var(--main-bg-color); /* Use card background */
+    border: 1px solid var(--input-border-color);
+    border-radius: 6px; /* Match other input border-radius */
+    padding: 0.5rem; /* Some internal padding */
+    box-shadow: 0 4px 12px var(--main-shadow-color); /* Optional: a subtle shadow */
+    width: 100%; /* Make it take the full width of its container */
+    box-sizing: border-box;
+}
+
+/* Header: Month/Year and Navigation */
+.datepicker .datepicker-header {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--input-border-color); /* Subtle separator */
+    margin-bottom: 0.5rem;
+}
+
+.datepicker .datepicker-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.5rem; /* Padding within the controls bar */
+}
+
+.datepicker .datepicker-controls .button,
+.datepicker .datepicker-controls .prev-btn,
+.datepicker .datepicker-controls .next-btn,
+.datepicker .datepicker-controls .view-switch {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--text-color);
+    font-weight: 600;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.datepicker .datepicker-controls .button:hover,
+.datepicker .datepicker-controls .prev-btn:hover,
+.datepicker .datepicker-controls .next-btn:hover,
+.datepicker .datepicker-controls .view-switch:hover {
+    background-color: var(--input-focus-shadow-color);
+    color: var(--button-primary-bg-color);
+}
+
+/* View Switch (Month Year title) */
+.datepicker .datepicker-controls .view-switch {
+    font-size: 1rem;
+}
+
+/* Days of the Week (Mon, Tue, etc.) */
+.datepicker .datepicker-view .week,
+.datepicker .datepicker-view .days-of-week {
+    display: flex;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid var(--input-border-color);
+}
+
+.datepicker .datepicker-view .dow,
+.datepicker .datepicker-view .days-of-week .day-name {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--input-label-color);
+    padding: 0.25rem 0;
+}
+
+/* Individual Day Cells */
+.datepicker .datepicker-view .days .day {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.datepicker .datepicker-view .days .day:hover:not(.disabled):not(.selected) {
+    background-color: var(--input-focus-shadow-color);
+    border-color: var(--input-focus-border-color);
+}
+
+/* Other month days (previous/next month) */
+.datepicker .datepicker-view .days .day.prev,
+.datepicker .datepicker-view .days .day.next {
+    color: var(--button-disabled-bg-color);
+}
+.datepicker .datepicker-view .days .day.prev:hover,
+.datepicker .datepicker-view .days .day.next:hover {
+    background-color: var(--input-focus-shadow-color);
+}
+
+
+/* Today's Date */
+.datepicker .datepicker-view .days .day.today:not(.selected) {
+    font-weight: bold;
+    border: 1px solid var(--input-label-color);
+    color: var(--input-label-color);
+}
+.datepicker .datepicker-view .days .day.today:not(.selected):hover {
+    background-color: var(--input-focus-shadow-color);
+    border: 1px solid var(--button-primary-bg-color);
+}
+
+
+/* Selected Date */
+.datepicker .datepicker-view .days .day.selected,
+.datepicker .datepicker-view .days .day.selected:hover {
+    background-color: var(--button-primary-bg-color);
+    color: var(--button-primary-text-color);
+    border-color: var(--button-primary-hover-bg-color);
+    font-weight: bold;
+}
+
+/* Disabled Date */
+.datepicker .datepicker-view .days .day.disabled,
+.datepicker .datepicker-view .days .day.disabled:hover {
+    color: var(--button-disabled-bg-color);
+    background-color: transparent;
+    cursor: default;
+    border-color: transparent;
+}
+
+/* Ensure responsiveness if calendar is too wide */
+@media (max-width: 400px) {
+    .datepicker .datepicker-view .days .day {
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    .datepicker .datepicker-controls .button,
+    .datepicker .datepicker-controls .prev-btn,
+    .datepicker .datepicker-controls .next-btn,
+    .datepicker .datepicker-controls .view-switch {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.9rem;
+    }
 }
