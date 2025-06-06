@@ -61,7 +61,7 @@ def calculate_time_api():
 
     initial_time_str = data.get('initial_time')
     duration_str = data.get('duration')
-    days_offset_str = data.get('days_offset', '0') # Default to '0' as a string
+    # days_offset_str = data.get('days_offset', '0') # Removed
     start_date_str = data.get('start_date') # Optional
 
     if not initial_time_str:
@@ -75,17 +75,18 @@ def calculate_time_api():
             time_obj = Time(initial_time_str)
             duration_obj = Duration(duration_str)
 
-            days_offset = 0
-            if isinstance(days_offset_str, (int, str)):
-                try:
-                    days_offset = int(days_offset_str)
-                except ValueError:
-                    return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer."}), 400
-            else:
-                return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer."}), 400
+            # days_offset related logic removed
+            # days_offset = 0
+            # if isinstance(days_offset_str, (int, str)):
+            #     try:
+            #         days_offset = int(days_offset_str)
+            #     except ValueError:
+            #         return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer."}), 400
+            # else:
+            #     return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer."}), 400
 
             new_time_obj, days_from_duration = time_obj + duration_obj
-            total_days_passed = days_from_duration + days_offset
+            total_days_passed = days_from_duration # Removed + days_offset
 
             calculated_time_str = str(new_time_obj)
             result_display_str = calculated_time_str
@@ -133,17 +134,16 @@ def calculate_time_api():
             # Or, more directly, add to full_start_datetime if it's purely a date shift.
             # The original spec for days_offset was for the non-calendar case.
             # For calendar case, if days_offset is to be supported, it should shift the full_start_datetime.
-
-            current_days_offset = 0
-            if isinstance(days_offset_str, (int, str)) and days_offset_str != '0': # Only process if not default '0'
-                try:
-                    current_days_offset = int(days_offset_str)
-                    full_start_datetime += timedelta(days=current_days_offset)
-                except ValueError:
-                     return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer when used with start_date."}), 400
-            elif not isinstance(days_offset_str, (int, str)) and days_offset_str != '0':
-                 return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer when used with start_date."}), 400
-
+            # All days_offset logic removed from this path as well.
+            # current_days_offset = 0
+            # if isinstance(days_offset_str, (int, str)) and days_offset_str != '0': # Only process if not default '0'
+            #     try:
+            #         current_days_offset = int(days_offset_str)
+            #         full_start_datetime += timedelta(days=current_days_offset)
+            #     except ValueError:
+            #          return jsonify({"error": "Invalid format for days_offset, must be a string representing an integer when used with start_date."}), 400
+            # elif not isinstance(days_offset_str, (int, str)) and days_offset_str != '0':
+            #      return jsonify({"error": "Invalid type for days_offset, must be an integer or a string representing an integer when used with start_date."}), 400
 
             # Calculate End Datetime
             end_datetime_obj = full_start_datetime + duration_timedelta
